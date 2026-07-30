@@ -1,0 +1,9 @@
+node_modules
+.next
+.next-dev
+.npm-cache
+.env
+.env.local
+coverage
+*.tsbuildinfo
+prisma/dev.db

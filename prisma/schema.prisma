@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  OUTSTANDING
+  OVERDUE
+  PAID
+  VOID
+}
+
+enum ReminderStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum PromiseStatus {
+  OPEN
+  KEPT
+  BROKEN
+  CANCELLED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Company {
+  id                   String    @id @default(cuid())
+  name                 String
+  slug                 String    @unique
+  billingEmail         String?
+  plan                 String    @default("BETA")
+  stripeCustomerId     String?   @unique
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  users                User[]
+  customers            Customer[]
+  invoices             Invoice[]
+  reminders            Reminder[]
+  paymentPromises      PaymentPromise[]
+  recommendations      AIRecommendation[]
+}
+
+model User {
+  id             String   @id @default(cuid())
+  companyId      String
+  name           String?
+  email          String   @unique
+  passwordHash   String?
+  role           UserRole @default(MEMBER)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  auditEvents    AuditEvent[]
+  @@index([companyId])
+}
+
+model Customer {
+  id             String    @id @default(cuid())
+  companyId      String
+  name           String
+  contactName    String?
+  email          String?
+  phone          String?
+  externalId     String?
+  riskScore      Int       @default(0)
+  riskLevel      RiskLevel @default(LOW)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  company        Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invoices       Invoice[]
+  reminders      Reminder[]
+  paymentPromises PaymentPromise[]
+  @@unique([companyId, externalId])
+  @@index([companyId, riskLevel])
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  companyId       String
+  customerId      String
+  number          String
+  amount          Decimal       @db.Decimal(12, 2)
+  currency        String        @default("GBP")
+  issueDate       DateTime
+  dueDate         DateTime
+  paidAt          DateTime?
+  status          InvoiceStatus @default(OUTSTANDING)
+  reminderStage   Int           @default(0)
+  source          String?       // CSV, Xero, QuickBooks, etc.
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  reminders       Reminder[]
+  paymentPromises PaymentPromise[]
+  @@unique([companyId, number])
+  @@index([companyId, status, dueDate])
+  @@index([customerId])
+}
+
+model Reminder {
+  id         String         @id @default(cuid())
+  companyId  String
+  customerId String
+  invoiceId  String
+  stage      Int
+  subject    String
+  body       String
+  status     ReminderStatus @default(DRAFT)
+  scheduledFor DateTime?
+  sentAt     DateTime?
+  createdAt  DateTime       @default(now())
+  company    Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer   Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  invoice    Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  @@index([companyId, status, scheduledFor])
+}
+
+model PaymentPromise {
+  id          String        @id @default(cuid())
+  companyId   String
+  customerId  String
+  invoiceId   String?
+  amount      Decimal?      @db.Decimal(12, 2)
+  promisedFor DateTime
+  status      PromiseStatus @default(OPEN)
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer    Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  invoice     Invoice?      @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  @@index([companyId, status, promisedFor])
+}
+
+model AIRecommendation {
+  id         String    @id @default(cuid())
+  companyId  String
+  customerId String?
+  invoiceId  String?
+  title      String
+  rationale  String
+  action     String?
+  riskLevel  RiskLevel @default(LOW)
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  @@index([companyId, riskLevel, createdAt])
+}
+
+model AuditEvent {
+  id        String   @id @default(cuid())
+  companyId String
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([companyId, createdAt])
+}
