@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
+import { StatementEmailForm } from "@/components/statement-email-form";
 
 export const dynamic = "force-dynamic";
 
