@@ -8,9 +8,9 @@ import { CheckoutButton } from "./checkout-button";
 
 export const dynamic = "force-dynamic";
 const plans = [
-  { name: "Starter", price: "£79", description: "For small teams getting control of overdue invoices.", features: ["Up to 100 invoices", "Three-stage reminders", "Customer statements", "Email support"] },
-  { name: "Growth", price: "£199", description: "For growing businesses with a busy finance function.", features: ["Up to 500 invoices", "Risk prioritisation", "Payment promises", "Priority support"] },
-  { name: "Professional", price: "£399", description: "For teams that want deeper automation and reporting.", features: ["Everything in Growth", "Advanced reports", "Multiple team members", "Dedicated onboarding"] },
+  { name: "Starter", price: "£79", description: "For small teams getting control of overdue invoices.", features: ["Up to 100 invoices", "Three-stage reminders", "Customer statements", "Payment tracking", "Email support"] },
+  { name: "Growth", price: "£199", description: "For growing businesses with a busy finance function.", features: ["Up to 500 invoices", "Risk prioritisation", "Payment promises", "Automated reminder schedules", "Priority support"] },
+  { name: "Professional", price: "£399", description: "For teams that want deeper automation and reporting.", features: ["Everything in Growth", "Advanced reports", "Multiple team members", "Owner collection dashboard", "Dedicated onboarding"] },
 ];
 
 export default async function PricingPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
