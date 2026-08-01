@@ -55,13 +55,17 @@ export async function sendReminder(formData: FormData) {
   if (!user) redirect("/login");
   const reminderId = formData.get("reminderId");
   if (typeof reminderId !== "string") redirect("/reminders");
-  const reminder = await prisma.reminder.findFirst({ where: { id: reminderId, companyId: user.companyId, status: "SCHEDULED" }, include: { customer: true } });
+  const reminder = await prisma.reminder.findFirst({ where: { id: reminderId, companyId: user.companyId, status: "SCHEDULED" }, include: { customer: true, company: true } });
   if (!reminder) redirect("/reminders?error=not-found");
   if (!reminder.customer.email) redirect("/reminders?error=no-email");
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
   if (!apiKey || !from) redirect("/reminders?error=email-not-configured");
-  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [reminder.customer.email], subject: reminder.subject, text: reminder.body }) });
+  const paymentDetails = reminder.company.paymentMethods === "BANK" || reminder.company.paymentMethods === "BOTH"
+    ? `\n\nPayment by bank transfer:\nAccount name: ${reminder.company.bankAccountName || reminder.company.name}\nSort code: ${reminder.company.bankSortCode || "Please contact us for details"}\nAccount number: ${reminder.company.bankAccountNumber || "Please contact us for details"}\nReference: ${reminder.company.paymentReference || reminder.invoiceId}`
+    : "";
+  const stripeDetails = reminder.company.paymentMethods === "STRIPE" || reminder.company.paymentMethods === "BOTH" ? "\n\nYou can also pay securely online by card using the payment option provided by our accounts team." : "";
+  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [reminder.customer.email], subject: reminder.subject, text: `${reminder.body}${paymentDetails}${stripeDetails}` }) });
   if (!response.ok) { await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "FAILED" } }); redirect("/reminders?error=send-failed"); }
   await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "SENT", sentAt: new Date() } });
   redirect("/reminders?sent=1");
