@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { invoiceLimitReached } from "@/lib/plan";
 
 function text(formData: FormData, key: string) { const value = formData.get(key); return typeof value === "string" ? value.trim() : ""; }
 
@@ -19,6 +20,7 @@ export async function createInvoice(formData: FormData) {
   if (!customerId || !number || !Number.isFinite(amount) || amount <= 0 || Number.isNaN(dueDate.getTime())) redirect("/invoices?error=details");
   const customer = await prisma.customer.findFirst({ where: { id: customerId, companyId: user.companyId } });
   if (!customer) redirect("/invoices?error=customer");
+  if (await invoiceLimitReached(user.companyId)) redirect("/invoices?error=limit");
   await prisma.invoice.create({ data: { companyId: user.companyId, customerId, number, amount, issueDate: Number.isNaN(issueDate.getTime()) ? new Date() : issueDate, dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "MANUAL" } });
   redirect("/invoices?created=1");
 }
@@ -36,6 +38,11 @@ export async function importInvoicesCsv(formData: FormData) {
   const index = (name: string) => headers.indexOf(name);
   const required = ["invoice_number", "customer_name", "amount", "due_date"];
   if (required.some((name) => index(name) < 0)) redirect("/invoices?error=columns");
+  const validRows = rows.slice(1).filter((row) => {
+    const values = row.split(",").map((value) => value.trim().replace(/^"|"$/g, ""));
+    return Boolean(values[index("customer_name")] && values[index("invoice_number")] && Number.isFinite(Number(values[index("amount")])) && !Number.isNaN(new Date(values[index("due_date")]).getTime()));
+  });
+  if (await invoiceLimitReached(user.companyId, validRows.length)) redirect("/invoices?error=limit");
   let imported = 0;
   for (const row of rows.slice(1)) {
     const values = row.split(",").map((value) => value.trim().replace(/^"|"$/g, ""));
