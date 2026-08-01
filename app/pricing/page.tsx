@@ -9,7 +9,7 @@ import { CheckoutButton } from "./checkout-button";
 export const dynamic = "force-dynamic";
 const plans = [
   { name: "Starter", price: "£79", description: "For small teams getting control of overdue invoices.", features: ["Up to 100 invoices", "Three-stage reminders", "Customer statements", "Email support"] },
-  { name: "Growth", price: "£199", description: "For growing businesses with a busy finance function.", features: ["Unlimited invoices", "Risk prioritisation", "Payment promises", "Priority support"] },
+  { name: "Growth", price: "£199", description: "For growing businesses with a busy finance function.", features: ["Up to 500 invoices", "Risk prioritisation", "Payment promises", "Priority support"] },
   { name: "Professional", price: "£399", description: "For teams that want deeper automation and reporting.", features: ["Everything in Growth", "Advanced reports", "Multiple team members", "Dedicated onboarding"] },
 ];
 
