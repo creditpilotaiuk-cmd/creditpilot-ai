@@ -49,6 +49,11 @@ model Company {
   slug                 String    @unique
   billingEmail         String?
   plan                 String    @default("BETA")
+  paymentMethods      String    @default("STRIPE")
+  bankAccountName     String?
+  bankSortCode        String?
+  bankAccountNumber   String?
+  paymentReference    String?
   stripeCustomerId     String?   @unique
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
