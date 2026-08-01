@@ -23,14 +23,14 @@ export async function generateReminderDrafts() {
     const recipient = invoice.customer.contactName || invoice.customer.name;
     const amount = `£${Number(invoice.amount).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
     const copy = nextStage === -2
-      ? { subject: `Upcoming payment reminder: invoice ${invoice.number}`, body: `Hello ${recipient},\n\nThis is a friendly reminder that invoice ${invoice.number} for ${amount} is due in 7 days. Please let us know if you have any questions.\n\nKind regards` }
+      ? { subject: `Payment due in 7 days · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nA quick reminder that invoice ${invoice.number} for ${amount} is due in 7 days. If payment has already been arranged, please disregard this message. Otherwise, please let us know if you have any questions.\n\nKind regards` }
       : nextStage === -1
-        ? { subject: `Payment due tomorrow: invoice ${invoice.number}`, body: `Hello ${recipient},\n\nA reminder that invoice ${invoice.number} for ${amount} is due tomorrow. Please arrange payment by the due date.\n\nKind regards` }
+        ? { subject: `Payment due tomorrow · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} is due tomorrow. Please arrange payment by the due date, or contact us if anything needs checking.\n\nKind regards` }
         : nextStage === 1
-      ? { subject: `Friendly payment reminder: invoice ${invoice.number}`, body: `Hello ${recipient},\n\nThis is a friendly reminder that invoice ${invoice.number} for ${amount} is now 7 days overdue. Please let us know when payment is expected.\n\nKind regards` }
+      ? { subject: `Payment reminder · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} is now 7 days overdue. Please arrange payment when you can, or reply with the expected payment date. If there is an issue with the invoice, we’re happy to help.\n\nKind regards` }
       : nextStage === 2
-        ? { subject: `Second payment reminder: invoice ${invoice.number}`, body: `Hello ${recipient},\n\nOur records show that invoice ${invoice.number} for ${amount} remains unpaid. It is now 8 days overdue. Please arrange payment or contact us today if there is an issue.\n\nKind regards` }
-        : { subject: `Final demand: invoice ${invoice.number}`, body: `Hello ${recipient},\n\nFINAL DEMAND: invoice ${invoice.number} for ${amount} is now 15 days overdue. Please make payment immediately or contact us today to discuss this balance. We reserve all rights regarding recovery of this debt.\n\nKind regards` };
+        ? { subject: `Second payment reminder · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} remains unpaid and is now 8 days overdue. Please arrange payment within the next few days, or contact us today so we can resolve any query.\n\nKind regards` }
+        : { subject: `Formal payment request · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} is now 15 days overdue. Please arrange payment promptly or contact us today to agree the next step. If payment has already been made, please send the remittance details so we can update our records.\n\nKind regards` };
     await prisma.reminder.create({ data: { companyId: user.companyId, customerId: invoice.customerId, invoiceId: invoice.id, stage: nextStage, subject: copy.subject, body: copy.body, status: "DRAFT" } });
     created += 1;
   }
