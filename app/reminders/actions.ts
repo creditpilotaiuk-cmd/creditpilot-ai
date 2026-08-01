@@ -9,17 +9,24 @@ export async function generateReminderDrafts() {
   if (!session?.user?.email) redirect("/login");
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user) redirect("/login");
-  const overdue = await prisma.invoice.findMany({ where: { companyId: user.companyId, status: "OVERDUE" }, include: { customer: true, reminders: true } });
+  const invoices = await prisma.invoice.findMany({ where: { companyId: user.companyId, status: { in: ["OVERDUE", "OUTSTANDING"] } }, include: { customer: true, reminders: true } });
   let created = 0;
-  for (const invoice of overdue) {
+  for (const invoice of invoices) {
     const daysOverdue = Math.floor((Date.now() - invoice.dueDate.getTime()) / 86400000);
+    const daysUntilDue = Math.ceil((invoice.dueDate.getTime() - Date.now()) / 86400000);
     const maxStage = invoice.reminders.reduce((highest, reminder) => Math.max(highest, reminder.stage), 0);
-    const nextStage = maxStage + 1;
-    const eligible = nextStage === 1 ? daysOverdue >= 7 : nextStage === 2 ? daysOverdue >= 8 : nextStage === 3 ? daysOverdue >= 15 : false;
-    if (!eligible || nextStage > 3 || invoice.reminders.some((reminder) => reminder.status === "DRAFT" && reminder.stage === nextStage)) continue;
+    const nextStage = invoice.status === "OUTSTANDING" ? (daysUntilDue === 1 ? -1 : daysUntilDue === 7 ? -2 : 0) : maxStage + 1;
+    const eligible = invoice.status === "OUTSTANDING"
+      ? nextStage < 0
+      : nextStage === 1 ? daysOverdue >= 7 : nextStage === 2 ? daysOverdue >= 8 : nextStage === 3 ? daysOverdue >= 15 : false;
+    if (!eligible || (invoice.status === "OVERDUE" && nextStage > 3) || invoice.reminders.some((reminder) => reminder.status === "DRAFT" && reminder.stage === nextStage)) continue;
     const recipient = invoice.customer.contactName || invoice.customer.name;
     const amount = `£${Number(invoice.amount).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
-    const copy = nextStage === 1
+    const copy = nextStage === -2
+      ? { subject: `Upcoming payment reminder: invoice ${invoice.number}`, body: `Hello ${recipient},\n\nThis is a friendly reminder that invoice ${invoice.number} for ${amount} is due in 7 days. Please let us know if you have any questions.\n\nKind regards` }
+      : nextStage === -1
+        ? { subject: `Payment due tomorrow: invoice ${invoice.number}`, body: `Hello ${recipient},\n\nA reminder that invoice ${invoice.number} for ${amount} is due tomorrow. Please arrange payment by the due date.\n\nKind regards` }
+        : nextStage === 1
       ? { subject: `Friendly payment reminder: invoice ${invoice.number}`, body: `Hello ${recipient},\n\nThis is a friendly reminder that invoice ${invoice.number} for ${amount} is now 7 days overdue. Please let us know when payment is expected.\n\nKind regards` }
       : nextStage === 2
         ? { subject: `Second payment reminder: invoice ${invoice.number}`, body: `Hello ${recipient},\n\nOur records show that invoice ${invoice.number} for ${amount} remains unpaid. It is now 8 days overdue. Please arrange payment or contact us today if there is an issue.\n\nKind regards` }
