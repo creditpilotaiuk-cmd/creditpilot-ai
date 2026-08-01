@@ -18,7 +18,7 @@ export async function generateReminderDrafts() {
     const nextStage = invoice.status === "OUTSTANDING" ? (daysUntilDue === 1 ? -1 : daysUntilDue === 7 ? -2 : 0) : maxStage + 1;
     const eligible = invoice.status === "OUTSTANDING"
       ? nextStage < 0
-      : nextStage === 1 ? daysOverdue >= 7 : nextStage === 2 ? daysOverdue >= 8 : nextStage === 3 ? daysOverdue >= 15 : false;
+      : nextStage === 1 ? daysOverdue >= 1 : nextStage === 2 ? daysOverdue >= 8 : nextStage === 3 ? daysOverdue >= 15 : false;
     if (!eligible || (invoice.status === "OVERDUE" && nextStage > 3) || invoice.reminders.some((reminder) => reminder.status === "DRAFT" && reminder.stage === nextStage)) continue;
     const recipient = invoice.customer.contactName || invoice.customer.name;
     const amount = `£${Number(invoice.amount).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
@@ -27,7 +27,7 @@ export async function generateReminderDrafts() {
       : nextStage === -1
         ? { subject: `Payment due tomorrow · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} is due tomorrow. Please arrange payment by the due date, or contact us if anything needs checking.\n\nKind regards` }
         : nextStage === 1
-      ? { subject: `Payment reminder · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} is now 7 days overdue. Please arrange payment when you can, or reply with the expected payment date. If there is an issue with the invoice, we’re happy to help.\n\nKind regards` }
+      ? { subject: `Payment reminder · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} is now ${Math.max(1, daysOverdue)} day${daysOverdue === 1 ? "" : "s"} overdue. Please arrange payment when you can, or reply with the expected payment date. If there is an issue with the invoice, we’re happy to help.\n\nKind regards` }
       : nextStage === 2
         ? { subject: `Second payment reminder · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} remains unpaid and is now 8 days overdue. Please arrange payment within the next few days, or contact us today so we can resolve any query.\n\nKind regards` }
         : { subject: `Formal payment request · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} is now 15 days overdue. Please arrange payment promptly or contact us today to agree the next step. If payment has already been made, please send the remittance details so we can update our records.\n\nKind regards` };
