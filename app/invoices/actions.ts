@@ -58,3 +58,19 @@ export async function importInvoicesCsv(formData: FormData) {
   }
   redirect(`/invoices?imported=${imported}`);
 }
+
+export async function sendInvoice(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const invoiceId = text(formData, "invoiceId");
+  if (!user || !invoiceId) redirect("/invoices?error=send");
+  const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, companyId: user.companyId }, include: { customer: true, company: true } });
+  if (!invoice?.customer.email) redirect("/invoices?error=no-email");
+  const key = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM_EMAIL;
+  if (!key || !from) redirect("/invoices?error=email-not-configured");
+  const payment = invoice.company.paymentMethods === "BANK" || invoice.company.paymentMethods === "BOTH" ? `\n\nPayment by bank transfer:\nAccount name: ${invoice.company.bankAccountName || "Please contact us"}\nSort code: ${invoice.company.bankSortCode || "Please contact us"}\nAccount number: ${invoice.company.bankAccountNumber || "Please contact us"}\nReference: ${invoice.company.paymentReference || invoice.number}` : "";
+  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [invoice.customer.email], subject: `Invoice ${invoice.number} from ${invoice.company.name}`, text: `Hello ${invoice.customer.contactName || invoice.customer.name},\n\nPlease find your invoice details below.\n\nInvoice: ${invoice.number}\nAmount: £${Number(invoice.amount).toFixed(2)}\nDue date: ${invoice.dueDate.toLocaleDateString("en-GB")}${payment}\n\nPlease contact us if you have any questions.\n\nKind regards\n${invoice.company.name}` }) });
+  redirect(`/invoices?sent=${response.ok ? "1" : "0"}`);
+}
