@@ -55,7 +55,7 @@ export async function sendReminder(formData: FormData) {
   if (!user) redirect("/login");
   const reminderId = formData.get("reminderId");
   if (typeof reminderId !== "string") redirect("/reminders");
-  const reminder = await prisma.reminder.findFirst({ where: { id: reminderId, companyId: user.companyId, status: "SCHEDULED" }, include: { customer: true, company: true } });
+  const reminder = await prisma.reminder.findFirst({ where: { id: reminderId, companyId: user.companyId, status: "SCHEDULED" }, include: { customer: true, company: true, invoice: true } });
   if (!reminder) redirect("/reminders?error=not-found");
   if (!reminder.customer.email) redirect("/reminders?error=no-email");
   const apiKey = process.env.RESEND_API_KEY;
@@ -68,5 +68,8 @@ export async function sendReminder(formData: FormData) {
   const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [reminder.customer.email], subject: reminder.subject, text: `${reminder.body}${paymentDetails}${stripeDetails}` }) });
   if (!response.ok) { await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "FAILED" } }); redirect("/reminders?error=send-failed"); }
   await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "SENT", sentAt: new Date() } });
+  if (reminder.stage === 3) {
+    await prisma.aIRecommendation.create({ data: { companyId: user.companyId, customerId: reminder.customerId, invoiceId: reminder.invoiceId, title: `Escalation required: ${reminder.invoice.number}`, rationale: `The final demand has been sent and invoice ${reminder.invoice.number} remains unpaid. Automatic reminders have now ended.`, action: "Review and choose the next action", riskLevel: "HIGH" } });
+  }
   redirect("/reminders?sent=1");
 }
