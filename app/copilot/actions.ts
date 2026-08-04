@@ -62,3 +62,23 @@ export async function analyseCustomerReply(formData: FormData) {
   } catch { /* fallback */ }
   redirect(`/copilot?replyResult=${encodeURIComponent(result)}`);
 }
+
+export async function generateCollectionIntelligence() {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) redirect("/login");
+  const invoices = await prisma.invoice.findMany({ where: { companyId: user.companyId }, include: { customer: true, paymentPromises: true, reminders: true }, orderBy: { dueDate: "asc" }, take: 300 });
+  const now = new Date();
+  const overdue = invoices.filter(i => i.status === "OVERDUE");
+  const promises = invoices.flatMap(i => i.paymentPromises.map(p => ({ invoice: i.number, customer: i.customer.name, promisedFor: p.promisedFor.toISOString().slice(0, 10), status: p.status })));
+  const context = invoices.map(i => `${i.number}|${i.customer.name}|${i.amount}|due ${i.dueDate.toISOString().slice(0,10)}|${i.status}|reminders ${i.reminders.length}`).join("\n");
+  const fallback = `AI collection review\n\nDaily action plan\n1. Prioritise ${overdue.slice(0, 3).map(i => i.customer.name).join(", ") || "upcoming due invoices"}.\n2. Review any open payment promises and follow up on missed dates.\n3. Send the next approved reminder only after checking for disputes.\n\nRisk alerts\n${overdue.length ? `${overdue.length} overdue invoice(s) need attention, including high-value balances.` : "No overdue invoices detected."}\n\nPayment-plan guidance\nOffer staged instalments for high-value balances where the customer requests more time; agree dates in writing.\n\nFollow-up scheduling\nSet the next contact for 2 business days after a promise date or customer reply.`;
+  let result = fallback;
+  const key = process.env.OPENAI_API_KEY;
+  if (key) try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0.2, messages: [{ role: "system", content: "You are CreditPilot Copilot. Produce a concise practical collection intelligence report with these headings: Daily action plan, Payment-risk scoring, Promise-to-pay alerts, Payment-plan suggestions, Reminder tone and next follow-up, Collection risk alerts, and Plain-English statement summary. Use only supplied data. Do not invent facts or claim payments are received. Mention when data is insufficient." }, { role: "user", content: `Today: ${now.toISOString().slice(0,10)}\nInvoices:\n${context || "No invoices"}\nPromises:\n${JSON.stringify(promises)}` }] }) });
+    const json = await response.json(); result = json.choices?.[0]?.message?.content?.trim() || fallback;
+  } catch { /* fallback */ }
+  redirect(`/copilot?intelligence=${encodeURIComponent(result)}`);
+}
