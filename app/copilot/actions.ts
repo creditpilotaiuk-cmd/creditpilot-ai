@@ -1,4 +1,5 @@
 "use server";
+// Copilot answers are generated from the owner's live workspace context.
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
