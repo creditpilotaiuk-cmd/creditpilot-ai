@@ -31,7 +31,19 @@ export async function generateReminderDrafts() {
       : nextStage === 2
         ? { subject: `Second payment reminder · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} remains unpaid and is now 8 days overdue. Please arrange payment within the next few days, or contact us today so we can resolve any query.\n\nKind regards` }
         : { subject: `Formal payment request · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} is now 15 days overdue. Please arrange payment promptly or contact us today to agree the next step. If payment has already been made, please send the remittance details so we can update our records.\n\nKind regards` };
-    await prisma.reminder.create({ data: { companyId: user.companyId, customerId: invoice.customerId, invoiceId: invoice.id, stage: nextStage, subject: copy.subject, body: copy.body, status: "DRAFT" } });
+    let aiCopy = copy;
+    const openAIKey = process.env.OPENAI_API_KEY;
+    if (openAIKey) {
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${openAIKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0.3, response_format: { type: "json_object" }, messages: [{ role: "system", content: "You write concise, professional UK business credit-control emails. Return JSON with subject and body only. Never threaten legal action or invent payment details." }, { role: "user", content: `Write a ${nextStage === 3 ? "final demand" : nextStage === 2 ? "second reminder" : "friendly reminder"} for ${recipient}. Invoice ${invoice.number}, amount £${Number(invoice.amount).toFixed(2)}, ${Math.max(1, daysOverdue)} days overdue. Customer email history: ${invoice.reminders.length} previous reminder(s). Keep the tone firm but respectful and ask the customer to reply if there is a query.` }] }) });
+        if (response.ok) {
+          const result = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+          const parsed = JSON.parse(result.choices?.[0]?.message?.content || "{}");
+          if (typeof parsed.subject === "string" && typeof parsed.body === "string") aiCopy = { subject: parsed.subject, body: parsed.body };
+        }
+      } catch { /* Keep the reliable template if AI is unavailable. */ }
+    }
+    await prisma.reminder.create({ data: { companyId: user.companyId, customerId: invoice.customerId, invoiceId: invoice.id, stage: nextStage, subject: aiCopy.subject, body: aiCopy.body, status: "DRAFT" } });
     created += 1;
   }
   redirect(`/reminders?created=${created}`);
