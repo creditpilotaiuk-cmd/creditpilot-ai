@@ -19,7 +19,10 @@ export async function askCopilot(formData: FormData) {
   const money = (value: unknown) => `£${Number(value).toFixed(2)}`;
   const lower = question.toLowerCase();
   const largest = invoices.reduce((max, i) => Number(i.amount) > Number(max?.amount ?? 0) ? i : max, invoices[0]);
-  const fallback = lower.includes("overdue")
+  const chaseList = [...overdue].sort((a, b) => Number(b.amount) - Number(a.amount) || b.reminders.length - a.reminders.length).slice(0, 5);
+  const fallback = lower.includes("chase") || lower.includes("priority") || lower.includes("today")
+    ? chaseList.length ? `Chase these customers first today, prioritised by balance and reminder history:\n${chaseList.map((i, index) => `${index + 1}. ${i.customer.name} — ${money(i.amount)} (${i.number}, ${i.reminders.length} reminder(s))`).join("\n")}` : "There are no overdue customers to chase today. Review upcoming due invoices instead."
+    : lower.includes("overdue")
     ? overdue.length ? `You have ${overdue.length} overdue invoice${overdue.length === 1 ? "" : "s"}, totalling ${money(overdue.reduce((sum, i) => sum + Number(i.amount), 0))}.\n${overdue.map((i) => `• ${i.number} — ${i.customer.name} — ${money(i.amount)} — ${i.reminders.length} reminder(s)`).join("\n")}` : "There are no overdue invoices."
     : lower.includes("most") || lower.includes("owe")
       ? largest ? `The largest outstanding balance is ${money(largest.amount)} for ${largest.customer.name} (${largest.number}).` : "There are no outstanding invoices."
