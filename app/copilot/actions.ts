@@ -39,3 +39,26 @@ export async function askCopilot(formData: FormData) {
   }
   redirect(`/copilot?answer=${encodeURIComponent(answer)}&question=${encodeURIComponent(question)}`);
 }
+
+export async function analyseCustomerReply(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const reply = String(formData.get("reply") || "").trim();
+  if (!user || !reply) redirect("/copilot");
+  const lower = reply.toLowerCase();
+  let result = lower.includes("paid") || lower.includes("payment sent")
+    ? "Classification: PAYMENT CONFIRMATION\nNext action: Verify the payment in your bank or accounting system before marking the invoice paid.\nSuggested reply: Thanks for the update. We’ll confirm receipt and update your account shortly."
+    : lower.includes("dispute") || lower.includes("incorrect") || lower.includes("wrong")
+      ? "Classification: QUERY OR DISPUTE\nNext action: Pause escalation, review the invoice and ask for the specific issue to be resolved.\nSuggested reply: Thanks for letting us know. We’ll review this promptly and come back to you with an update."
+      : lower.includes("friday") || lower.includes("tomorrow") || lower.includes("pay") || lower.includes("transfer")
+        ? "Classification: PROMISE TO PAY\nNext action: Record the promised payment date and schedule a follow-up for the next business day.\nSuggested reply: Thanks for confirming. We’ve noted your expected payment date and will follow up if needed."
+        : "Classification: NEEDS REVIEW\nNext action: Read the message carefully and respond personally; do not escalate until the customer’s position is clear.\nSuggested reply: Thanks for your message. We’re reviewing this and will come back to you shortly.";
+  const key = process.env.OPENAI_API_KEY;
+  if (key) try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0.2, messages: [{ role: "system", content: "You are CreditPilot Copilot. Analyse a customer payment-related email. Return exactly three concise lines beginning Classification:, Next action:, Suggested reply:. Classify as PAYMENT CONFIRMATION, PROMISE TO PAY, QUERY OR DISPUTE, NEED MORE TIME, or NEEDS REVIEW. Never claim a payment is received without verification and never give legal advice." }, { role: "user", content: reply }] }) });
+    const json = await response.json();
+    result = json.choices?.[0]?.message?.content?.trim() || result;
+  } catch { /* fallback */ }
+  redirect(`/copilot?replyResult=${encodeURIComponent(result)}`);
+}
