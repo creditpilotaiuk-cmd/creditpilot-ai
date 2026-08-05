@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { invoiceLimitReached } from "@/lib/plan";
@@ -39,7 +40,12 @@ export async function createInvoice(formData: FormData) {
   const customer = await prisma.customer.findFirst({ where: { id: customerId, companyId: user.companyId } });
   if (!customer) redirect("/invoices?error=customer");
   if (await invoiceLimitReached(user.companyId)) redirect("/invoices?error=limit");
-  await prisma.invoice.create({ data: { companyId: user.companyId, customerId, number, amount, issueDate: Number.isNaN(issueDate.getTime()) ? new Date() : issueDate, dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "MANUAL" } });
+  try {
+    await prisma.invoice.create({ data: { companyId: user.companyId, customerId, number, amount, issueDate: Number.isNaN(issueDate.getTime()) ? new Date() : issueDate, dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "MANUAL" } });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") redirect("/invoices?error=duplicate-number");
+    throw error;
+  }
   redirect("/invoices?created=1");
 }
 
