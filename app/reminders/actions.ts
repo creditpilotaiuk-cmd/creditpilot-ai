@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createInvoiceToken } from "@/lib/invoice-link";
 
 export async function generateReminderDrafts() {
   const session = await auth();
@@ -78,7 +79,9 @@ export async function sendReminder(formData: FormData) {
     ? `\n\nPayment by bank transfer:\nAccount name: ${reminder.company.bankAccountName || reminder.company.name}\nSort code: ${reminder.company.bankSortCode || "Please contact us for details"}\nAccount number: ${reminder.company.bankAccountNumber || "Please contact us for details"}\nReference: ${reminder.company.paymentReference || reminder.invoiceId}`
     : "";
   const stripeDetails = reminder.company.paymentMethods === "STRIPE" || reminder.company.paymentMethods === "BOTH" ? "\n\nYou can also pay securely online by card using the payment option provided by our accounts team." : "";
-  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [reminder.customer.email], subject: reminder.subject, text: `${reminder.body}${paymentDetails}${stripeDetails}` }) });
+  const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://creditpilotai.co.uk";
+  const invoiceUrl = `${baseUrl.replace(/\/$/, "")}/invoice/${createInvoiceToken(reminder.invoice.id)}`;
+  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [reminder.customer.email], subject: reminder.subject, text: `${reminder.body}${paymentDetails}${stripeDetails}\n\nView your invoice and payment options securely:\n${invoiceUrl}` }) });
   if (!response.ok) { await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "FAILED" } }); redirect("/reminders?error=send-failed"); }
   await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "SENT", sentAt: new Date() } });
   if (reminder.stage === 3) {
