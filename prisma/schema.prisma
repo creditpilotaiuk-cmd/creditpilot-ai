@@ -20,6 +20,11 @@ enum InvoiceStatus {
   OVERDUE
   PAID
   VOID
+  DISPUTED
+  ON_HOLD
+  PAYMENT_PLAN
+  WRITTEN_OFF
+  LEGAL_ESCALATION
 }
 
 enum ReminderStatus {

@@ -7,6 +7,22 @@ import { invoiceLimitReached } from "@/lib/plan";
 
 function text(formData: FormData, key: string) { const value = formData.get(key); return typeof value === "string" ? value.trim() : ""; }
 
+export async function updateInvoiceStatus(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const invoiceId = text(formData, "invoiceId");
+  const status = text(formData, "status");
+  const reason = text(formData, "reason");
+  const allowed = ["OUTSTANDING", "OVERDUE", "DISPUTED", "ON_HOLD", "PAYMENT_PLAN", "WRITTEN_OFF", "LEGAL_ESCALATION", "PAID"];
+  if (!user || !invoiceId || !allowed.includes(status)) redirect("/invoices?error=status");
+  const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, companyId: user!.companyId } });
+  if (!invoice) redirect("/invoices?error=status");
+  await prisma.invoice.update({ where: { id: invoiceId }, data: { status: status as any } });
+  await prisma.auditEvent.create({ data: { companyId: user!.companyId, userId: user!.id, action: `invoice_status_${status.toLowerCase()}`, entity: "Invoice", entityId: invoiceId, metadata: { from: invoice!.status, to: status, reason: reason || null } } });
+  redirect("/invoices?updated=1");
+}
+
 export async function createInvoice(formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");

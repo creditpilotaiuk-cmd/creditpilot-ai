@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
-import { createInvoice, importInvoicesCsv, sendInvoice } from "./actions";
+import { createInvoice, importInvoicesCsv, sendInvoice, updateInvoiceStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
 

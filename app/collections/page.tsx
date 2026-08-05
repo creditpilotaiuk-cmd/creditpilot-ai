@@ -1,0 +1,16 @@
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
+import { updateInvoiceStatus } from "@/app/invoices/actions";
+
+export const dynamic = "force-dynamic";
+
+export default async function CollectionsPage() {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) redirect("/login");
+  const invoices = await prisma.invoice.findMany({ where: { companyId: user.companyId, status: { not: "PAID" } }, include: { customer: true }, orderBy: [{ status: "desc" }, { dueDate: "asc" }] });
+  return <main className="flex min-h-screen"><DashboardSidebar /><div className="min-w-0 flex-1"><header className="border-b bg-white px-5 py-4 sm:px-8"><p className="text-sm text-slate-500">Owner controls</p><h1 className="text-xl font-bold text-ink">Collections control centre</h1></header><div className="mx-auto max-w-6xl space-y-6 p-5 sm:p-8"><div className="rounded-xl border border-blue-100 bg-sky p-5"><h2 className="font-bold text-ink">Keep every collection case under control</h2><p className="mt-1 text-sm text-slate-600">Put a case on hold, record a dispute or payment plan, and escalate only when you are ready. Held and disputed invoices should not be chased automatically.</p></div><section className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-card"><div className="border-b p-5"><h2 className="font-bold text-ink">Open collection cases</h2><p className="mt-1 text-sm text-slate-500">{invoices.length} unpaid invoice{invoices.length === 1 ? "" : "s"} requiring a decision.</p></div>{invoices.length === 0 ? <p className="p-8 text-sm text-slate-500">No open cases.</p> : <div className="divide-y">{invoices.map((invoice) => <div key={invoice.id} className="flex flex-wrap items-center justify-between gap-4 p-5"><div><p className="font-semibold text-ink">{invoice.number} · {invoice.customer.name}</p><p className="mt-1 text-sm text-slate-500">£{Number(invoice.amount).toLocaleString("en-GB", { minimumFractionDigits: 2 })} · due {invoice.dueDate.toLocaleDateString("en-GB")}</p><span className="mt-2 inline-block rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{invoice.status.replaceAll("_", " ").toLowerCase()}</span></div><form action={updateInvoiceStatus} className="flex flex-wrap items-center gap-2"><input type="hidden" name="invoiceId" value={invoice.id} /><select name="status" defaultValue={invoice.status} className="rounded-lg border px-3 py-2 text-sm"><option value="OVERDUE">Overdue</option><option value="ON_HOLD">Put on hold</option><option value="DISPUTED">Disputed</option><option value="PAYMENT_PLAN">Payment plan</option><option value="LEGAL_ESCALATION">Legal escalation</option><option value="WRITTEN_OFF">Written off</option><option value="PAID">Paid</option></select><input name="reason" placeholder="Reason (optional)" className="w-40 rounded-lg border px-3 py-2 text-sm" /><button className="button-primary" type="submit">Save case</button></form></div>)}</div>}</section></div></div></main>;
+}
