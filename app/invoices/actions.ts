@@ -16,6 +16,7 @@ export async function updateInvoiceStatus(formData: FormData) {
   const reason = text(formData, "reason");
   const allowed = ["OUTSTANDING", "OVERDUE", "DISPUTED", "ON_HOLD", "PAYMENT_PLAN", "WRITTEN_OFF", "LEGAL_ESCALATION", "PAID"];
   if (!user || !invoiceId || !allowed.includes(status)) redirect("/invoices?error=status");
+  if (status === "DISPUTED" && reason.length < 5) redirect("/invoices?error=dispute-reason");
   const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, companyId: user!.companyId } });
   if (!invoice) redirect("/invoices?error=status");
   await prisma.invoice.update({ where: { id: invoiceId }, data: { status: status as any } });

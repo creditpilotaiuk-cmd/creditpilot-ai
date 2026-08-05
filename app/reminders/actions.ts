@@ -69,6 +69,7 @@ export async function sendReminder(formData: FormData) {
   if (typeof reminderId !== "string") redirect("/reminders");
   const reminder = await prisma.reminder.findFirst({ where: { id: reminderId, companyId: user.companyId, status: "SCHEDULED" }, include: { customer: true, company: true, invoice: true } });
   if (!reminder) redirect("/reminders?error=not-found");
+  if (["DISPUTED", "ON_HOLD"].includes(reminder.invoice.status)) redirect("/reminders?error=invoice-on-hold");
   if (!reminder.customer.email) redirect("/reminders?error=no-email");
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
