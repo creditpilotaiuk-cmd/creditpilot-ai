@@ -9,19 +9,80 @@
     @apply min-h-screen text-slate-800 antialiased;
     background-color: #f7f9fc;
     background-image:
-      radial-gradient(circle at 8% 5%, rgba(39, 100, 255, 0.12), transparent 28rem),
-      radial-gradient(circle at 92% 24%, rgba(89, 145, 255, 0.09), transparent 32rem),
+      radial-gradient(circle at 8% 5%, rgba(39, 100, 255, 0.16), transparent 28rem),
+      radial-gradient(circle at 92% 24%, rgba(89, 145, 255, 0.12), transparent 32rem),
       radial-gradient(circle at 48% 100%, rgba(39, 100, 255, 0.06), transparent 38rem),
+      linear-gradient(145deg, rgba(234, 241, 255, 0.8) 0%, rgba(247, 249, 252, 0.25) 42%, rgba(225, 236, 255, 0.65) 100%),
       linear-gradient(rgba(16, 38, 94, 0.025) 1px, transparent 1px),
       linear-gradient(90deg, rgba(16, 38, 94, 0.025) 1px, transparent 1px);
-    background-position: center, center, center, center, center;
-    background-size: auto, auto, auto, 40px 40px, 40px 40px;
+    background-position: center, center, center, center, center, center;
+    background-size: auto, auto, auto, auto, 40px 40px, 40px 40px;
     background-attachment: fixed;
   }
 }
 
 @layer components {
-  .button-primary { @apply inline-flex items-center justify-center rounded-lg bg-electric px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-electric focus:ring-offset-2; }
+  .button-primary {
+    @apply inline-flex items-center justify-center rounded-lg px-5 py-3 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-electric focus:ring-offset-2;
+    background-image: linear-gradient(110deg, #2764ff 0%, #327cff 38%, #1746cc 72%, #2764ff 100%);
+    background-size: 220% 100%;
+    background-position: left center;
+    box-shadow: 0 10px 24px rgba(39, 100, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    transition: transform 180ms ease, box-shadow 180ms ease, background-position 420ms ease;
+  }
+
+  .button-primary:hover {
+    background-position: right center;
+    box-shadow: 0 14px 30px rgba(39, 100, 255, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .button-primary:active {
+    box-shadow: 0 6px 16px rgba(39, 100, 255, 0.24);
+    transform: translateY(0) scale(0.98);
+  }
   .button-secondary { @apply inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-navy transition hover:border-blue-200 hover:bg-sky; }
   .eyebrow { @apply text-sm font-semibold uppercase tracking-[0.18em] text-electric; }
+
+  /* Homepage performance strip */
+  body > main > section.border-y.bg-white {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(96, 165, 250, 0.22);
+    background:
+      radial-gradient(circle at 4% 50%, rgba(39, 100, 255, 0.38), transparent 18rem),
+      radial-gradient(circle at 96% 20%, rgba(96, 165, 250, 0.2), transparent 20rem),
+      linear-gradient(110deg, #0b1636 0%, #10265e 52%, #173b87 100%);
+  }
+
+  body > main > section.border-y.bg-white > div {
+    gap: 1rem;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  body > main > section.border-y.bg-white > div > div {
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1.25rem 0.75rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+  }
+
+  body > main > section.border-y.bg-white > div > div p:first-child {
+    color: #fff;
+    font-size: 1.5rem;
+    letter-spacing: -0.025em;
+  }
+
+  body > main > section.border-y.bg-white > div > div p:last-child {
+    color: #bfdbfe;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .button-primary { transition: none; }
+  }
 }
