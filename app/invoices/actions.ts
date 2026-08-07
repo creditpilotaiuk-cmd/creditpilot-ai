@@ -42,7 +42,8 @@ export async function createInvoice(formData: FormData) {
   if (!customer) redirect("/invoices?error=customer");
   if (await invoiceLimitReached(user.companyId)) redirect("/invoices?error=limit");
   try {
-    await prisma.invoice.create({ data: { companyId: user.companyId, customerId, number, amount, issueDate: Number.isNaN(issueDate.getTime()) ? new Date() : issueDate, dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "MANUAL" } });
+    const invoice = await prisma.invoice.create({ data: { companyId: user.companyId, customerId, number, amount, issueDate: Number.isNaN(issueDate.getTime()) ? new Date() : issueDate, dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "MANUAL" } });
+    await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "INVOICE_UPLOADED", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: null, newValue: { number: invoice.number, source: "MANUAL" }, customerId, ipAddress: null } } });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") redirect("/invoices?error=duplicate-number");
     throw error;
@@ -78,7 +79,8 @@ export async function importInvoicesCsv(formData: FormData) {
     if (!customerName || !number || !Number.isFinite(amount) || Number.isNaN(dueDate.getTime())) continue;
     const email = index("customer_email") >= 0 ? values[index("customer_email")] : "";
     const customer = email ? await prisma.customer.upsert({ where: { companyId_externalId: { companyId: user.companyId, externalId: email } }, update: { name: customerName }, create: { companyId: user.companyId, name: customerName, email, externalId: email } }) : await prisma.customer.create({ data: { companyId: user.companyId, name: customerName } });
-    await prisma.invoice.create({ data: { companyId: user.companyId, customerId: customer.id, number, amount, issueDate: new Date(), dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "CSV" } });
+    const invoice = await prisma.invoice.create({ data: { companyId: user.companyId, customerId: customer.id, number, amount, issueDate: new Date(), dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "CSV" } });
+    await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "INVOICE_UPLOADED", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: null, newValue: { number: invoice.number, source: "CSV" }, customerId: customer.id, ipAddress: null } } });
     imported += 1;
   }
   redirect(`/invoices?imported=${imported}`);
@@ -97,5 +99,9 @@ export async function sendInvoice(formData: FormData) {
   if (!key || !from) redirect("/invoices?error=email-not-configured");
   const payment = invoice.company.paymentMethods === "BANK" || invoice.company.paymentMethods === "BOTH" ? `\n\nPayment by bank transfer:\nAccount name: ${invoice.company.bankAccountName || "Please contact us"}\nSort code: ${invoice.company.bankSortCode || "Please contact us"}\nAccount number: ${invoice.company.bankAccountNumber || "Please contact us"}\nReference: ${invoice.company.paymentReference || invoice.number}` : "";
   const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [invoice.customer.email], subject: `Invoice ${invoice.number} from ${invoice.company.name}`, text: `Hello ${invoice.customer.contactName || invoice.customer.name},\n\nPlease find your invoice details below.\n\nInvoice: ${invoice.number}\nAmount: £${Number(invoice.amount).toFixed(2)}\nDue date: ${invoice.dueDate.toLocaleDateString("en-GB")}${payment}\n\nPlease contact us if you have any questions.\n\nKind regards\n${invoice.company.name}` }) });
+  if (response.ok) await prisma.$transaction([
+    prisma.invoice.update({ where: { id: invoice.id }, data: { status: "SENT" } }),
+    prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "INVOICE_SENT", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: invoice.status, newValue: { status: "SENT", recipient: invoice.customer.email }, customerId: invoice.customerId, ipAddress: null } } }),
+  ]);
   redirect(`/invoices?sent=${response.ok ? "1" : "0"}`);
 }
