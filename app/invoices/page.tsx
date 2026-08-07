@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 const auditLabels: Record<string, string> = {
   REMINDER_GENERATED: "Reminder generated", REMINDER_EDITED: "Reminder edited", REMINDER_APPROVED: "Reminder approved",
   REMINDER_SENT: "Reminder sent", DELIVERY_CONFIRMED: "Delivery confirmed", EMAIL_OPENED: "Email opened",
-  PAYMENT_PROMISE: "Payment promise", PROMISE_BROKEN: "Promise broken", PAYMENT_RECEIVED: "Payment received",
+  PAYMENT_PROMISE: "Payment promise", PROMISE_BROKEN: "Broken payment promise", PAYMENT_RECEIVED: "Payment received",
   STATEMENT_SENT: "Statement sent", DISPUTE_RAISED: "Dispute raised",
 };
 
