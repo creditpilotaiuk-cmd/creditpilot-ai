@@ -15,6 +15,7 @@ export async function generateReminderDrafts() {
   const pausedCustomerIds = new Set<string>();
   const checkedCustomerIds = new Set<string>();
   for (const event of dunningEvents) {
+    if (!event.entityId) continue;
     if (checkedCustomerIds.has(event.entityId)) continue;
     checkedCustomerIds.add(event.entityId);
     const metadata = (event.metadata || {}) as Record<string, unknown>;
