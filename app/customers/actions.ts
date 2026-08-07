@@ -53,34 +53,37 @@ export async function refreshExternalRisk(formData: FormData) {
   const customer = await prisma.customer.findFirst({ where: { id: customerId, companyId: user.companyId } });
   if (!customer) redirect("/customers");
 
-  let trustpilot: Record<string, unknown> | null = null;
-  let dnb: Record<string, unknown> | null = null;
+  let creditsafe: Record<string, unknown> | null = null;
   const unavailable: string[] = [];
-  const trustpilotKey = process.env.TRUSTPILOT_API_KEY;
-  if (domain && trustpilotKey) {
-    const response = await fetch(`https://api.trustpilot.com/v1/business-units/find?name=${encodeURIComponent(domain)}`, { headers: { apikey: trustpilotKey }, cache: "no-store" });
-    if (response.ok) { const data = await response.json(); trustpilot = { domain, displayName: data.displayName ?? null, trustScore: data.score?.trustScore ?? null, stars: data.score?.stars ?? null, reviewCount: data.numberOfReviews?.total ?? null }; } else unavailable.push("Trustpilot profile not found");
-  } else unavailable.push(!domain ? "Trustpilot domain required" : "Trustpilot API key not configured");
-
-  const dnbToken = process.env.DNB_DIRECT_TOKEN;
-  const dnbRiskUrl = process.env.DNB_RISK_API_URL;
-  if (dnbRiskUrl && dnbToken) {
-    const url = new URL(dnbRiskUrl); url.searchParams.set("domain", domain);
-    const response = await fetch(url, { headers: { Authorization: dnbToken }, cache: "no-store" });
-    if (response.ok) { const data = await response.json(); dnb = { rating: data.rating ?? data.dnbRating ?? null, financialCondition: data.financialCondition ?? null, summary: data.summary ?? data.ratingSummary ?? null }; } else unavailable.push("D&B summary unavailable");
-  } else unavailable.push("D&B service not configured");
+  const creditsafeUsername = process.env.CREDITSAFE_USERNAME;
+  const creditsafePassword = process.env.CREDITSAFE_PASSWORD;
+  const creditsafeBaseUrl = (process.env.CREDITSAFE_API_URL || "https://connect.creditsafe.com/v1").replace(/\/$/, "");
+  if (creditsafeUsername && creditsafePassword) {
+    const authentication = await fetch(`${creditsafeBaseUrl}/authenticate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: creditsafeUsername, password: creditsafePassword }), cache: "no-store" });
+    if (authentication.ok) {
+      const authenticationData = await authentication.json();
+      const token = authenticationData.token;
+      const search = await fetch(`${creditsafeBaseUrl}/companies?countries=${encodeURIComponent(process.env.CREDITSAFE_COUNTRY || "GB")}&name=${encodeURIComponent(customer.name)}&pageSize=1`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+      if (search.ok) {
+        const searchData = await search.json();
+        const match = searchData.companies?.[0] || searchData.data?.[0];
+        const connectId = match?.id || match?.connectId;
+        if (connectId) {
+          const report = await fetch(`${creditsafeBaseUrl}/companies/${encodeURIComponent(connectId)}`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+          if (report.ok) { const data = await report.json(); const rating = data.report?.companySummary?.creditRating || data.companySummary?.creditRating || data.creditRating; creditsafe = { connectId, score: rating?.currentCreditRating?.commonValue ?? rating?.score ?? null, description: rating?.currentCreditRating?.commonDescription ?? rating?.description ?? null, creditLimit: rating?.currentCreditLimit?.value ?? data.creditLimit?.value ?? null, summary: rating?.currentCreditRating?.commonDescription ?? data.summary ?? null }; } else unavailable.push("Creditsafe report unavailable");
+        } else unavailable.push("Creditsafe company match unavailable");
+      } else unavailable.push("Creditsafe company search unavailable");
+    } else unavailable.push("Creditsafe authentication unavailable");
+  } else unavailable.push("Creditsafe service not configured");
 
   let score = customer.riskLevel === "LOW" ? 2 : customer.riskLevel === "MEDIUM" ? 1 : 0;
-  const trustScore = Number(trustpilot?.trustScore ?? NaN);
-  if (Number.isFinite(trustScore)) score += trustScore >= 4 ? 2 : trustScore >= 3 ? 1 : 0;
-  const dnbRating = String(dnb?.rating || "");
-  const dnbRiskClass = Number(dnbRating.match(/([1-4])$/)?.[1] || NaN);
-  if (Number.isFinite(dnbRiskClass)) score += dnbRiskClass <= 2 ? 2 : dnbRiskClass === 3 ? 1 : 0;
-  const sourceCount = 1 + (trustpilot ? 1 : 0) + (dnb ? 1 : 0);
+  const creditsafeScore = Number(creditsafe?.score ?? NaN);
+  if (Number.isFinite(creditsafeScore)) score += creditsafeScore >= 70 ? 2 : creditsafeScore >= 40 ? 1 : 0;
+  const sourceCount = 1 + (creditsafe ? 1 : 0);
   const reliability = sourceCount === 1 ? `${customer.riskLevel.charAt(0)}${customer.riskLevel.slice(1).toLowerCase()} risk · internal data only` : score >= sourceCount * 1.5 ? "Reliable" : score >= sourceCount ? "Review recommended" : "Higher risk";
 
-  const summary = `Overall: ${reliability}. D&B: ${dnb?.summary || dnb?.rating || "unavailable"}. Trustpilot: ${trustpilot?.trustScore ? `${trustpilot.trustScore}/5 from ${trustpilot.reviewCount || 0} reviews` : "unavailable"}.`;
-  const metadata = JSON.parse(JSON.stringify({ previousValue: null, newValue: { reliability, summary, internalRisk: customer.riskLevel, trustpilot, dnb, unavailable, domain, checkedAt: new Date().toISOString() }, ipAddress: null }));
+  const summary = `Overall: ${reliability}. Creditsafe: ${creditsafe?.summary || creditsafe?.description || creditsafe?.score || "unavailable"}.`;
+  const metadata = JSON.parse(JSON.stringify({ previousValue: null, newValue: { reliability, summary, internalRisk: customer.riskLevel, creditsafe, unavailable, domain, checkedAt: new Date().toISOString() }, ipAddress: null }));
   await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "RISK_ASSESSMENT_UPDATED", entity: "Customer", entityId: customer.id, metadata } });
   redirect("/customers?riskUpdated=1");
 }
