@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-white text-ink">
+    <main className="min-h-screen bg-white/65 text-ink backdrop-blur-[1px]">
       <MarketingNav />
       <section className="relative overflow-hidden border-t border-slate-100 bg-sky px-6 py-20 lg:px-8 lg:py-28">
         <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-blue-200/50 blur-3xl" />

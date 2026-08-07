@@ -4,7 +4,20 @@
 
 @layer base {
   * { @apply border-slate-200; }
-  body { @apply bg-[#F7F9FC] text-slate-800 antialiased; }
+  html { @apply bg-[#F7F9FC]; }
+  body {
+    @apply min-h-screen text-slate-800 antialiased;
+    background-color: #f7f9fc;
+    background-image:
+      radial-gradient(circle at 8% 5%, rgba(39, 100, 255, 0.12), transparent 28rem),
+      radial-gradient(circle at 92% 24%, rgba(89, 145, 255, 0.09), transparent 32rem),
+      radial-gradient(circle at 48% 100%, rgba(39, 100, 255, 0.06), transparent 38rem),
+      linear-gradient(rgba(16, 38, 94, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(16, 38, 94, 0.025) 1px, transparent 1px);
+    background-position: center, center, center, center, center;
+    background-size: auto, auto, auto, 40px 40px, 40px 40px;
+    background-attachment: fixed;
+  }
 }
 
 @layer components {
