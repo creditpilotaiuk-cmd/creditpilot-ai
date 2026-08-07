@@ -22,13 +22,17 @@ export default function AboutPage() {
 
       <section className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[1.1fr_.9fr] lg:px-8 lg:py-24">
         <div>
-          <p className="eyebrow">Meet the founder</p>
+          <p className="eyebrow">Meet the founders</p>
           <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Peter Ingham</h2>
           <p className="mt-1 font-semibold text-electric">Founder &amp; CEO, CreditPilot AI</p>
           <div className="mt-7 space-y-5 text-base leading-8 text-slate-600">
             <p>I created CreditPilot AI to help owners and finance teams spend less time chasing overdue invoices and more time running their businesses.</p>
             <p>The aim is not to replace good judgement or customer relationships. It is to give businesses a clear, reliable assistant that highlights what needs attention, prepares professional communication and keeps every promise, payment and next step in one place.</p>
             <p>Credit control should be proactive, understandable and human. That belief continues to guide every part of the product.</p>
+          </div>
+          <div className="mt-10 border-t border-slate-200 pt-8">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Daniela Martinez</h2>
+            <p className="mt-1 font-semibold text-electric">Co-Founder, CreditPilot AI</p>
           </div>
         </div>
         <aside className="rounded-2xl border border-blue-100 bg-sky p-7 shadow-card">
