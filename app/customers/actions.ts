@@ -76,6 +76,7 @@ export async function refreshExternalRisk(formData: FormData) {
   const sourceCount = 1 + (trustpilot ? 1 : 0) + (dnb ? 1 : 0);
   const reliability = sourceCount === 1 ? `${customer.riskLevel.charAt(0)}${customer.riskLevel.slice(1).toLowerCase()} risk · internal data only` : score >= sourceCount * 1.5 ? "Reliable" : score >= sourceCount ? "Review recommended" : "Higher risk";
 
-  await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "RISK_ASSESSMENT_UPDATED", entity: "Customer", entityId: customer.id, metadata: { previousValue: null, newValue: { reliability, internalRisk: customer.riskLevel, trustpilot, dnb, unavailable, domain: domain || null, duns: duns || null, checkedAt: new Date().toISOString() }, ipAddress: null } } });
+  const metadata = JSON.parse(JSON.stringify({ previousValue: null, newValue: { reliability, internalRisk: customer.riskLevel, trustpilot, dnb, unavailable, domain: domain || null, duns: duns || null, checkedAt: new Date().toISOString() }, ipAddress: null }));
+  await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "RISK_ASSESSMENT_UPDATED", entity: "Customer", entityId: customer.id, metadata } });
   redirect("/customers?riskUpdated=1");
 }
