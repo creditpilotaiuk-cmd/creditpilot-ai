@@ -44,7 +44,10 @@ export async function generateReminderDrafts() {
         }
       } catch { /* Keep the reliable template if AI is unavailable. */ }
     }
-    await prisma.reminder.create({ data: { companyId: user.companyId, customerId: invoice.customerId, invoiceId: invoice.id, stage: nextStage, subject: aiCopy.subject, body: aiCopy.body, status: "DRAFT" } });
+    await prisma.$transaction([
+      prisma.reminder.create({ data: { companyId: user.companyId, customerId: invoice.customerId, invoiceId: invoice.id, stage: nextStage, subject: aiCopy.subject, body: aiCopy.body, status: "DRAFT" } }),
+      prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "REMINDER_GENERATED", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: null, newValue: { subject: aiCopy.subject, body: aiCopy.body }, ipAddress: null } } }),
+    ]);
     created += 1;
   }
   redirect(`/reminders?created=${created}`);
@@ -57,8 +60,30 @@ export async function approveReminder(formData: FormData) {
   if (!user) redirect("/login");
   const reminderId = formData.get("reminderId");
   if (typeof reminderId !== "string") redirect("/reminders");
-  await prisma.reminder.updateMany({ where: { id: reminderId, companyId: user.companyId, status: "DRAFT" }, data: { status: "SCHEDULED", scheduledFor: new Date() } });
+  const reminder = await prisma.reminder.findFirst({ where: { id: reminderId, companyId: user.companyId, status: "DRAFT" } });
+  if (!reminder) redirect("/reminders?error=not-found");
+  await prisma.$transaction([
+    prisma.reminder.update({ where: { id: reminder.id }, data: { status: "SCHEDULED", scheduledFor: new Date() } }),
+    prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "REMINDER_APPROVED", entity: "Invoice", entityId: reminder.invoiceId, metadata: { previousValue: "DRAFT", newValue: "SCHEDULED", ipAddress: null } } }),
+  ]);
   redirect("/reminders?approved=1");
+}
+
+export async function editReminder(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const reminderId = formData.get("reminderId");
+  const subject = String(formData.get("subject") || "").trim();
+  const body = String(formData.get("body") || "").trim();
+  if (!user || typeof reminderId !== "string" || !subject || !body) redirect("/reminders?error=edit");
+  const reminder = await prisma.reminder.findFirst({ where: { id: reminderId, companyId: user.companyId, status: "DRAFT" } });
+  if (!reminder) redirect("/reminders?error=not-found");
+  await prisma.$transaction([
+    prisma.reminder.update({ where: { id: reminder.id }, data: { subject, body } }),
+    prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "REMINDER_EDITED", entity: "Invoice", entityId: reminder.invoiceId, metadata: { previousValue: { subject: reminder.subject, body: reminder.body }, newValue: { subject, body }, ipAddress: null } } }),
+  ]);
+  redirect("/reminders?edited=1");
 }
 
 export async function sendReminder(formData: FormData) {
@@ -84,6 +109,7 @@ export async function sendReminder(formData: FormData) {
   const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [reminder.customer.email], subject: reminder.subject, text: `${reminder.body}${paymentDetails}${stripeDetails}\n\nView your invoice and payment options securely:\n${invoiceUrl}` }) });
   if (!response.ok) { await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "FAILED" } }); redirect("/reminders?error=send-failed"); }
   await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "SENT", sentAt: new Date() } });
+  await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "REMINDER_SENT", entity: "Invoice", entityId: reminder.invoiceId, metadata: { previousValue: "SCHEDULED", newValue: { status: "SENT", recipient: reminder.customer.email }, ipAddress: null } } });
   if (reminder.stage === 3) {
     await prisma.aIRecommendation.create({ data: { companyId: user.companyId, customerId: reminder.customerId, invoiceId: reminder.invoiceId, title: `Escalation required: ${reminder.invoice.number}`, rationale: `The final demand has been sent and invoice ${reminder.invoice.number} remains unpaid. Automatic reminders have now ended.`, action: "Review and choose the next action", riskLevel: "HIGH" } });
   }

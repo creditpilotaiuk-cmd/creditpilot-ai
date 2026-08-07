@@ -22,8 +22,22 @@ export async function updateInvoiceStatus(formData: FormData) {
   const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, companyId: user!.companyId } });
   if (!invoice) redirect("/invoices?error=status");
   await prisma.invoice.update({ where: { id: invoiceId }, data: { status: status as any } });
-  await prisma.auditEvent.create({ data: { companyId: user!.companyId, userId: user!.id, action: `invoice_status_${status.toLowerCase()}`, entity: "Invoice", entityId: invoiceId, metadata: { from: invoice!.status, to: status, reason: reason || null } } });
+  const auditAction = status === "DISPUTED" ? "DISPUTE_RAISED" : status === "PAID" ? "PAYMENT_RECEIVED" : `INVOICE_STATUS_${status}`;
+  await prisma.auditEvent.create({ data: { companyId: user!.companyId, userId: user!.id, action: auditAction, entity: "Invoice", entityId: invoiceId, metadata: { previousValue: invoice!.status, newValue: status, reason: reason || null, ipAddress: null } } });
   redirect("/invoices?updated=1");
+}
+
+export async function addInvoiceNote(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const invoiceId = text(formData, "invoiceId");
+  const note = text(formData, "note");
+  if (!user || !invoiceId || note.length < 2) redirect("/invoices?error=note");
+  const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, companyId: user.companyId } });
+  if (!invoice) redirect("/invoices?error=note");
+  await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "NOTES_ADDED", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: null, newValue: note, ipAddress: null } } });
+  redirect("/invoices?note=1");
 }
 
 export async function createInvoice(formData: FormData) {
