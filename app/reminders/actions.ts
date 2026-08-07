@@ -11,8 +11,18 @@ export async function generateReminderDrafts() {
   if (!session?.user?.email) redirect("/login");
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user) redirect("/login");
+  const dunningEvents = await prisma.auditEvent.findMany({ where: { companyId: user.companyId, entity: "Customer", action: "DUNNING_CONTROL_UPDATED" }, orderBy: { createdAt: "desc" } });
+  const pausedCustomerIds = new Set<string>();
+  const checkedCustomerIds = new Set<string>();
+  for (const event of dunningEvents) {
+    if (checkedCustomerIds.has(event.entityId)) continue;
+    checkedCustomerIds.add(event.entityId);
+    const metadata = (event.metadata || {}) as Record<string, unknown>;
+    const newValue = (metadata.newValue || {}) as Record<string, unknown>;
+    if (newValue.paused === true) pausedCustomerIds.add(event.entityId);
+  }
   const invoices = await prisma.invoice.findMany({
-    where: { companyId: user.companyId, status: { in: ["OVERDUE", "OUTSTANDING"] } },
+    where: { companyId: user.companyId, status: { in: ["OVERDUE", "OUTSTANDING"] }, customerId: { notIn: [...pausedCustomerIds] } },
     include: {
       reminders: true,
       customer: { include: { invoices: { where: { status: "PAID", paidAt: { not: null } }, select: { paidAt: true }, orderBy: { paidAt: "desc" }, take: 12 } } },
@@ -79,6 +89,10 @@ export async function approveReminder(formData: FormData) {
   if (typeof reminderId !== "string") redirect("/reminders");
   const reminder = await prisma.reminder.findFirst({ where: { id: reminderId, companyId: user.companyId, status: "DRAFT" } });
   if (!reminder) redirect("/reminders?error=not-found");
+  const dunningEvent = await prisma.auditEvent.findFirst({ where: { companyId: user.companyId, entity: "Customer", entityId: reminder.customerId, action: "DUNNING_CONTROL_UPDATED" }, orderBy: { createdAt: "desc" } });
+  const dunningMetadata = (dunningEvent?.metadata || {}) as Record<string, unknown>;
+  const dunningValue = (dunningMetadata.newValue || {}) as Record<string, unknown>;
+  if (dunningValue.paused === true) redirect("/reminders?error=dunning-paused");
   await prisma.$transaction([
     prisma.reminder.update({ where: { id: reminder.id }, data: { status: "SCHEDULED", scheduledFor: new Date() } }),
     prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "REMINDER_APPROVED", entity: "Invoice", entityId: reminder.invoiceId, metadata: { previousValue: "DRAFT", newValue: "SCHEDULED", ipAddress: null } } }),
@@ -112,6 +126,10 @@ export async function sendReminder(formData: FormData) {
   if (typeof reminderId !== "string") redirect("/reminders");
   const reminder = await prisma.reminder.findFirst({ where: { id: reminderId, companyId: user.companyId, status: "SCHEDULED" }, include: { customer: true, company: true, invoice: true } });
   if (!reminder) redirect("/reminders?error=not-found");
+  const dunningEvent = await prisma.auditEvent.findFirst({ where: { companyId: user.companyId, entity: "Customer", entityId: reminder.customerId, action: "DUNNING_CONTROL_UPDATED" }, orderBy: { createdAt: "desc" } });
+  const dunningMetadata = (dunningEvent?.metadata || {}) as Record<string, unknown>;
+  const dunningValue = (dunningMetadata.newValue || {}) as Record<string, unknown>;
+  if (dunningValue.paused === true) redirect("/reminders?error=dunning-paused");
   if (["DISPUTED", "ON_HOLD", "PAYMENT_PLAN", "LEGAL_ESCALATION", "WRITTEN_OFF"].includes(reminder.invoice.status)) redirect("/reminders?error=invoice-on-hold");
   if (!reminder.customer.email) redirect("/reminders?error=no-email");
   const apiKey = process.env.RESEND_API_KEY;

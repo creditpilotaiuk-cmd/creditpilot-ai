@@ -41,6 +41,23 @@ export async function updateCreditLimit(formData: FormData) {
   redirect("/customers?creditLimit=1");
 }
 
+export async function updateDunningControl(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) redirect("/login");
+  const customerId = value(formData, "customerId");
+  const paused = value(formData, "paused") === "true";
+  const reason = value(formData, "reason");
+  if (!customerId || (paused && reason.length < 5)) redirect("/customers?error=dunning-reason");
+  const customer = await prisma.customer.findFirst({ where: { id: customerId, companyId: user.companyId } });
+  if (!customer) redirect("/customers");
+  const previous = await prisma.auditEvent.findFirst({ where: { companyId: user.companyId, entity: "Customer", entityId: customer.id, action: "DUNNING_CONTROL_UPDATED" }, orderBy: { createdAt: "desc" } });
+  const previousMetadata = (previous?.metadata || {}) as Record<string, unknown>;
+  await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "DUNNING_CONTROL_UPDATED", entity: "Customer", entityId: customer.id, metadata: { previousValue: previousMetadata.newValue ?? { paused: false }, newValue: { paused, reason: reason || null }, ipAddress: null } } });
+  redirect(`/customers?dunning=${paused ? "paused" : "resumed"}`);
+}
+
 export async function refreshExternalRisk(formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
