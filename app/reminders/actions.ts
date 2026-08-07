@@ -4,26 +4,43 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createInvoiceToken } from "@/lib/invoice-link";
+import { detectSmartReminderPattern } from "@/lib/smart-reminder-timing";
 
 export async function generateReminderDrafts() {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user) redirect("/login");
-  const invoices = await prisma.invoice.findMany({ where: { companyId: user.companyId, status: { in: ["OVERDUE", "OUTSTANDING"] } }, include: { customer: true, reminders: true } });
+  const invoices = await prisma.invoice.findMany({
+    where: { companyId: user.companyId, status: { in: ["OVERDUE", "OUTSTANDING"] } },
+    include: {
+      reminders: true,
+      customer: { include: { invoices: { where: { status: "PAID", paidAt: { not: null } }, select: { paidAt: true }, orderBy: { paidAt: "desc" }, take: 12 } } },
+    },
+  });
   let created = 0;
   for (const invoice of invoices) {
     const daysOverdue = Math.floor((Date.now() - invoice.dueDate.getTime()) / 86400000);
     const daysUntilDue = Math.ceil((invoice.dueDate.getTime() - Date.now()) / 86400000);
-    const maxStage = invoice.reminders.reduce((highest, reminder) => Math.max(highest, reminder.stage), 0);
-    const nextStage = invoice.status === "OUTSTANDING" ? (daysUntilDue === 1 ? -1 : daysUntilDue === 7 ? -2 : 0) : maxStage + 1;
-    const eligible = invoice.status === "OUTSTANDING"
-      ? nextStage < 0
-      : nextStage === 1 ? daysOverdue >= 1 : nextStage === 2 ? daysOverdue >= 8 : nextStage === 3 ? daysOverdue >= 15 : false;
-    if (!eligible || (invoice.status === "OVERDUE" && nextStage > 3) || invoice.reminders.some((reminder) => reminder.status === "DRAFT" && reminder.stage === nextStage)) continue;
+    const smartPattern = detectSmartReminderPattern(invoice.customer.invoices.flatMap(({ paidAt }) => paidAt ? [paidAt] : []));
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const smartEligible = Boolean(smartPattern?.timing) && !invoice.reminders.some((reminder) => reminder.stage === smartPattern?.stage && reminder.createdAt >= todayStart);
+    const maxStage = invoice.reminders.reduce((highest, reminder) => reminder.stage > 0 ? Math.max(highest, reminder.stage) : highest, 0);
+    const standardStage = invoice.status === "OUTSTANDING" ? (daysUntilDue === 1 ? -1 : daysUntilDue === 7 ? -2 : 0) : maxStage + 1;
+    const standardEligible = invoice.status === "OUTSTANDING"
+      ? standardStage < 0
+      : standardStage === 1 ? daysOverdue >= 1 : standardStage === 2 ? daysOverdue >= 8 : standardStage === 3 ? daysOverdue >= 15 : false;
+    const nextStage = smartEligible ? smartPattern!.stage : standardStage;
+    const eligible = smartEligible || standardEligible;
+    if (!eligible || (!smartEligible && invoice.status === "OVERDUE" && nextStage > 3) || invoice.reminders.some((reminder) => reminder.status === "DRAFT" && reminder.stage === nextStage)) continue;
     const recipient = invoice.customer.contactName || invoice.customer.name;
     const amount = `£${Number(invoice.amount).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
-    const copy = nextStage === -2
+    const copy = smartEligible
+      ? smartPattern!.timing === "DAY_BEFORE"
+        ? { subject: `Payment timing reminder · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nBased on the usual payment timing for your account, this is a friendly reminder that invoice ${invoice.number} for ${amount} remains open. If payment is already arranged, no action is needed. Otherwise, please let us know if anything needs checking.\n\nKind regards` }
+        : { subject: `Expected payment day · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} remains open. Your account normally records payment around today, so we wanted to send a timely reminder. If payment has already been made, please disregard this message.\n\nKind regards` }
+      : nextStage === -2
       ? { subject: `Payment due in 7 days · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nA quick reminder that invoice ${invoice.number} for ${amount} is due in 7 days. If payment has already been arranged, please disregard this message. Otherwise, please let us know if you have any questions.\n\nKind regards` }
       : nextStage === -1
         ? { subject: `Payment due tomorrow · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} is due tomorrow. Please arrange payment by the due date, or contact us if anything needs checking.\n\nKind regards` }
@@ -34,7 +51,7 @@ export async function generateReminderDrafts() {
         : { subject: `Formal payment request · invoice ${invoice.number}`, body: `Hello ${recipient},\n\nInvoice ${invoice.number} for ${amount} is now 15 days overdue. Please arrange payment promptly or contact us today to agree the next step. If payment has already been made, please send the remittance details so we can update our records.\n\nKind regards` };
     let aiCopy = copy;
     const openAIKey = process.env.OPENAI_API_KEY;
-    if (openAIKey) {
+    if (openAIKey && !smartEligible) {
       try {
         const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${openAIKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0.3, response_format: { type: "json_object" }, messages: [{ role: "system", content: "You write concise, professional UK business credit-control emails. Return JSON with subject and body only. Never threaten legal action or invent payment details." }, { role: "user", content: `Write a ${nextStage === 3 ? "final demand" : nextStage === 2 ? "second reminder" : "friendly reminder"} for ${recipient}. Invoice ${invoice.number}, amount £${Number(invoice.amount).toFixed(2)}, ${Math.max(1, daysOverdue)} days overdue. Customer email history: ${invoice.reminders.length} previous reminder(s). Keep the tone firm but respectful and ask the customer to reply if there is a query.` }] }) });
         if (response.ok) {
@@ -46,7 +63,7 @@ export async function generateReminderDrafts() {
     }
     await prisma.$transaction([
       prisma.reminder.create({ data: { companyId: user.companyId, customerId: invoice.customerId, invoiceId: invoice.id, stage: nextStage, subject: aiCopy.subject, body: aiCopy.body, status: "DRAFT" } }),
-      prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "REMINDER_GENERATED", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: null, newValue: { subject: aiCopy.subject, body: aiCopy.body }, ipAddress: null } } }),
+      prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "REMINDER_GENERATED", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: null, newValue: { subject: aiCopy.subject, body: aiCopy.body }, smartTiming: smartEligible ? { kind: smartPattern!.kind, timing: smartPattern!.timing, confidence: smartPattern!.confidence } : null, ipAddress: null } } }),
     ]);
     created += 1;
   }
