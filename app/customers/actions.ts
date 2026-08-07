@@ -28,7 +28,7 @@ export async function createCustomer(formData: FormData) {
 export async function updateCreditLimit(formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
   const customerId = value(formData, "customerId");
   const creditLimit = Number(value(formData, "creditLimit"));
@@ -44,11 +44,12 @@ export async function updateCreditLimit(formData: FormData) {
 export async function refreshExternalRisk(formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
+  if (!["GROWTH", "PROFESSIONAL"].includes(user.company.plan.toUpperCase())) redirect("/customers?error=premium-risk");
   const customerId = value(formData, "customerId");
   const domain = value(formData, "domain").replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
-  const duns = value(formData, "duns").replace(/\D/g, "");
+  if (!domain) redirect("/customers?error=domain");
   const customer = await prisma.customer.findFirst({ where: { id: customerId, companyId: user.companyId } });
   if (!customer) redirect("/customers");
 
@@ -62,10 +63,12 @@ export async function refreshExternalRisk(formData: FormData) {
   } else unavailable.push(!domain ? "Trustpilot domain required" : "Trustpilot API key not configured");
 
   const dnbToken = process.env.DNB_DIRECT_TOKEN;
-  if (duns && dnbToken) {
-    const response = await fetch(`https://direct.dnb.com/V5.0/organizations/${encodeURIComponent(duns)}/products/RTNG_TRND`, { headers: { Authorization: dnbToken }, cache: "no-store" });
-    if (response.ok) { const data = await response.json(); const assessment = data?.OrderProductResponse?.OrderProductResponseDetail?.Product?.Organization?.Assessment; dnb = { duns, rating: assessment?.DNBStandardRating?.DNBStandardRating ?? null, financialCondition: assessment?.FinancialConditionText?.$ ?? assessment?.FinancialConditionText ?? null, history: assessment?.HistoryRatingText?.$ ?? assessment?.HistoryRatingText ?? null, trend: assessment?.OverallTrendText?.$ ?? assessment?.OverallTrendText ?? null }; } else unavailable.push("D&B rating unavailable");
-  } else unavailable.push(!duns ? "D-U-N-S number required" : "D&B Direct token not configured");
+  const dnbRiskUrl = process.env.DNB_RISK_API_URL;
+  if (dnbRiskUrl && dnbToken) {
+    const url = new URL(dnbRiskUrl); url.searchParams.set("domain", domain);
+    const response = await fetch(url, { headers: { Authorization: dnbToken }, cache: "no-store" });
+    if (response.ok) { const data = await response.json(); dnb = { rating: data.rating ?? data.dnbRating ?? null, financialCondition: data.financialCondition ?? null, summary: data.summary ?? data.ratingSummary ?? null }; } else unavailable.push("D&B summary unavailable");
+  } else unavailable.push("D&B service not configured");
 
   let score = customer.riskLevel === "LOW" ? 2 : customer.riskLevel === "MEDIUM" ? 1 : 0;
   const trustScore = Number(trustpilot?.trustScore ?? NaN);
@@ -76,7 +79,8 @@ export async function refreshExternalRisk(formData: FormData) {
   const sourceCount = 1 + (trustpilot ? 1 : 0) + (dnb ? 1 : 0);
   const reliability = sourceCount === 1 ? `${customer.riskLevel.charAt(0)}${customer.riskLevel.slice(1).toLowerCase()} risk · internal data only` : score >= sourceCount * 1.5 ? "Reliable" : score >= sourceCount ? "Review recommended" : "Higher risk";
 
-  const metadata = JSON.parse(JSON.stringify({ previousValue: null, newValue: { reliability, internalRisk: customer.riskLevel, trustpilot, dnb, unavailable, domain: domain || null, duns: duns || null, checkedAt: new Date().toISOString() }, ipAddress: null }));
+  const summary = `Overall: ${reliability}. D&B: ${dnb?.summary || dnb?.rating || "unavailable"}. Trustpilot: ${trustpilot?.trustScore ? `${trustpilot.trustScore}/5 from ${trustpilot.reviewCount || 0} reviews` : "unavailable"}.`;
+  const metadata = JSON.parse(JSON.stringify({ previousValue: null, newValue: { reliability, summary, internalRisk: customer.riskLevel, trustpilot, dnb, unavailable, domain, checkedAt: new Date().toISOString() }, ipAddress: null }));
   await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "RISK_ASSESSMENT_UPDATED", entity: "Customer", entityId: customer.id, metadata } });
   redirect("/customers?riskUpdated=1");
 }
