@@ -132,6 +132,8 @@ export async function sendReminder(formData: FormData) {
   const dunningValue = (dunningMetadata.newValue || {}) as Record<string, unknown>;
   if (dunningValue.paused === true) redirect("/reminders?error=dunning-paused");
   if (["DISPUTED", "ON_HOLD", "PAYMENT_PLAN", "LEGAL_ESCALATION", "WRITTEN_OFF"].includes(reminder.invoice.status)) redirect("/reminders?error=invoice-on-hold");
+  const legalConfirmation = await prisma.auditEvent.findFirst({ where: { companyId: user.companyId, entity: "Invoice", entityId: reminder.invoiceId, action: "LEGAL_PROTECTION_CONFIRMED" }, orderBy: { createdAt: "desc" } });
+  if (!legalConfirmation) redirect("/reminders?error=legal-confirmation-required");
   if (!reminder.customer.email) redirect("/reminders?error=no-email");
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
