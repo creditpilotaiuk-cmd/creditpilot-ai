@@ -27,6 +27,22 @@ export async function updateInvoiceStatus(formData: FormData) {
   redirect("/invoices?updated=1");
 }
 
+export async function confirmInvoiceLegalProtection(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) redirect("/login");
+  const invoiceId = text(formData, "invoiceId");
+  const confirmations = ["invoiceCorrect", "goodsServicesSupplied", "recipientCorrect", "noDispute", "authorisedToContact"];
+  if (!invoiceId || confirmations.some((key) => formData.get(key) !== "on")) redirect("/invoices?error=legal-confirmation");
+  const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, companyId: user.companyId }, include: { customer: true } });
+  if (!invoice?.customer.email) redirect("/invoices?error=legal-email");
+  if (["DISPUTED", "ON_HOLD", "WRITTEN_OFF"].includes(invoice.status)) redirect("/invoices?error=legal-status");
+  const previous = await prisma.auditEvent.findFirst({ where: { companyId: user.companyId, entity: "Invoice", entityId: invoice.id, action: "LEGAL_PROTECTION_CONFIRMED" }, orderBy: { createdAt: "desc" } });
+  await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "LEGAL_PROTECTION_CONFIRMED", entity: "Invoice", entityId: invoice.id, customerId: invoice.customerId, metadata: { previousValue: previous ? "CONFIRMED" : null, newValue: { invoiceCorrect: true, goodsServicesSupplied: true, recipientCorrect: true, noDispute: true, authorisedToContact: true, recipient: invoice.customer.email }, ipAddress: null } } });
+  redirect("/invoices?legalConfirmed=1");
+}
+
 export async function createInvoice(formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
