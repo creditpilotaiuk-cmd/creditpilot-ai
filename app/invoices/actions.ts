@@ -39,7 +39,7 @@ export async function confirmInvoiceLegalProtection(formData: FormData) {
   if (!invoice?.customer.email) redirect("/invoices?error=legal-email");
   if (["DISPUTED", "ON_HOLD", "WRITTEN_OFF"].includes(invoice.status)) redirect("/invoices?error=legal-status");
   const previous = await prisma.auditEvent.findFirst({ where: { companyId: user.companyId, entity: "Invoice", entityId: invoice.id, action: "LEGAL_PROTECTION_CONFIRMED" }, orderBy: { createdAt: "desc" } });
-  await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "LEGAL_PROTECTION_CONFIRMED", entity: "Invoice", entityId: invoice.id, customerId: invoice.customerId, metadata: { previousValue: previous ? "CONFIRMED" : null, newValue: { invoiceCorrect: true, goodsServicesSupplied: true, recipientCorrect: true, noDispute: true, authorisedToContact: true, recipient: invoice.customer.email }, ipAddress: null } } });
+  await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "LEGAL_PROTECTION_CONFIRMED", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: previous ? "CONFIRMED" : null, newValue: { invoiceCorrect: true, goodsServicesSupplied: true, recipientCorrect: true, noDispute: true, authorisedToContact: true, recipient: invoice.customer.email }, ipAddress: null } } });
   redirect("/invoices?legalConfirmed=1");
 }
 
