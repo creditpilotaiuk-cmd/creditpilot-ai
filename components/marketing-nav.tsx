@@ -7,6 +7,6 @@ export function MarketingNav() {
     <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
 <Link href="/#features">Features</Link><Link href="/#how-it-works">How it works</Link><Link href="/#pricing">Pricing</Link><Link href="/terms">Terms</Link>
     </nav>
-    <div className="flex items-center gap-3"><Link className="hidden text-sm font-semibold text-navy sm:block" href="/login">Log in</Link><Link className="button-primary px-4 py-2.5" href="/register">Book a demo</Link></div>
+    <div className="flex items-center gap-2 sm:gap-3"><Link className="text-sm font-semibold text-navy" href="/login">Log in</Link><Link className="button-primary px-3 py-2.5 sm:px-4" href="/register">Start free beta</Link></div>
   </header>;
 }
