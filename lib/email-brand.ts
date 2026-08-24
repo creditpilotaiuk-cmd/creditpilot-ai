@@ -1,4 +1,4 @@
-const logoUrl = "https://www.creditpilotai.co.uk/creditpilot-email-logo.svg";
+const logoUrl = "https://www.creditpilotai.co.uk/creditpilot-email-logo.png";
 
 export function escapeEmailHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[character]!);
