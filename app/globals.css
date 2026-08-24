@@ -45,7 +45,7 @@
   .eyebrow { @apply text-sm font-semibold uppercase tracking-[0.18em] text-electric; }
 
   /* Homepage performance strip */
-  body > main > section.border-y.bg-white {
+  body > main > section.border-y.bg-white:not(#difference) {
     position: relative;
     overflow: hidden;
     border-color: rgba(96, 165, 250, 0.22);
@@ -55,13 +55,13 @@
       linear-gradient(110deg, #0b1636 0%, #10265e 52%, #173b87 100%);
   }
 
-  body > main > section.border-y.bg-white > div {
+  body > main > section.border-y.bg-white:not(#difference) > div {
     gap: 1rem;
     padding-top: 2.5rem;
     padding-bottom: 2.5rem;
   }
 
-  body > main > section.border-y.bg-white > div > div {
+  body > main > section.border-y.bg-white:not(#difference) > div > div {
     border: 1px solid rgba(255, 255, 255, 0.11);
     border-radius: 0.75rem;
     background: rgba(255, 255, 255, 0.06);
@@ -70,13 +70,13 @@
     backdrop-filter: blur(8px);
   }
 
-  body > main > section.border-y.bg-white > div > div p:first-child {
+  body > main > section.border-y.bg-white:not(#difference) > div > div p:first-child {
     color: #fff;
     font-size: 1.5rem;
     letter-spacing: -0.025em;
   }
 
-  body > main > section.border-y.bg-white > div > div p:last-child {
+  body > main > section.border-y.bg-white:not(#difference) > div > div p:last-child {
     color: #bfdbfe;
     font-weight: 600;
     letter-spacing: 0.1em;
