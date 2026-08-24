@@ -1,16 +1,20 @@
 # CreditPilot AI
 
-**Smarter Credit Control. Faster Payments.**
+**Turn overdue invoices into clear daily actions.**
 
-CreditPilot AI is a multi-tenant SaaS foundation for UK businesses that need a more intelligent way to manage invoice follow-ups, overdue debt and payment promises.
+CreditPilot AI is a multi-tenant collection workspace for UK businesses. It is designed to sit alongside accounting software and organise the operational work needed to recover overdue invoices: priorities, reminders, promises, disputes, case decisions and evidence.
+
+CreditPilot is not accounting software, does not submit tax or VAT returns, and is not affiliated with or endorsed by Xero, Intuit/QuickBooks or Sage. The current beta imports invoice data; direct accounting integrations are planned but do not yet exist.
 
 ## What is included
 
 - Next.js 15 App Router, TypeScript and Tailwind CSS
 - Responsive CreditPilot AI landing page using the agreed navy and electric-blue brand
 - Login and registration pages, plus an Auth.js credentials scaffold
-- Interactive dashboard prototype with AI recommendations and priority invoices
+- Live owner dashboard and prioritised daily collections workspace
 - Prisma/PostgreSQL multi-tenant schema for companies, users, customers, invoices, reminders, promises and audit events
+- Human-approved reminder drafting and sending, customer statements and collection evidence packs
+- Private platform administration for authorised CreditPilot owners
 - Extensible environment configuration for OpenAI, Stripe and Resend
 
 ## Run locally
@@ -35,11 +39,23 @@ lib/prisma.ts          Shared Prisma client
 prisma/schema.prisma   Multi-tenant data model
 ```
 
+## Product direction
+
+The accounting platform remains the financial system of record. CreditPilot is concentrating on the work that happens around the ledger:
+
+1. Explainable daily collection priorities.
+2. Promise-to-pay, dispute, hold and payment-plan workflows.
+3. Complete customer collection histories and evidence-ready escalation packs.
+4. Measurable collection outcomes, including cash recovered and promises kept.
+5. Direct accounting data connections, beginning with Xero after customer validation.
+
+Pricing is intentionally not final during the founding beta. Do not enable paid checkout until the connected workflow and measurable customer value have been validated.
+
 ## Integration roadmap
 
 ### Authentication
 
-`lib/auth.ts` contains an Auth.js credentials provider placeholder. Before launch, add secure registration, bcrypt password verification, account recovery, email verification, session access control and company onboarding. You can also replace credentials with Google or Microsoft SSO.
+The application uses Auth.js credentials with company-scoped database access and password recovery. Before general availability, complete email verification, production security review and broader authentication testing.
 
 ### AI
 
@@ -47,20 +63,20 @@ Add a server-side service (for example `lib/ai.ts`) that uses invoice and paymen
 
 ### Billing
 
-Use `Company.stripeCustomerId` for Stripe customer mapping. Add Stripe checkout, customer-portal and webhook routes before allowing self-serve subscriptions.
+Stripe checkout and webhook foundations exist, but paid plans are paused during product and pricing validation. Before enabling subscriptions, finalise plans, confirm customer value, test the complete billing lifecycle and provide a customer portal.
 
 ### Sending reminders
 
-Connect an email provider such as Resend, then use a scheduled job to find `Reminder` records with `SCHEDULED` status. Log outcomes in the `Reminder` table and write an `AuditEvent` for all externally visible actions.
+Resend-backed reminder delivery is implemented with human approval and audit events. A valid production sender and API key are required. Scheduled background delivery still needs a production-grade job runner and retry monitoring.
 
 ## Important launch notes
 
-The dashboard data is intentionally sample UI data; it does not yet read or write the database. Authentication forms are also a visual scaffold. Do not use the current project to send real payment-chasing emails until authentication, authorisation, audit logging, consent workflows, email domain setup and legal/compliance review are implemented.
+The dashboard reads company-scoped production data. Continue to require human approval for externally visible actions, preserve tenant isolation, and complete email-domain, privacy, security and legal/compliance review before a wider launch.
 
 ## Suggested next sprint
 
-1. Complete registration/login and protect dashboard routes.
-2. Build customer and invoice CRUD, starting with CSV import.
-3. Replace dashboard sample data with scoped Prisma queries.
-4. Add reminder rules, human approval and transactional email delivery.
-5. Add AI draft generation and Stripe billing after the core workflow is validated.
+1. Interview finance managers who already use Xero, QuickBooks or Sage and validate the daily collection workflow.
+2. Add ownership, next-action dates and outcome tracking to collection cases.
+3. Build and validate a read-only Xero connection using the official OAuth/API programme.
+4. Measure cash recovered, promise-kept rate and overdue-debt movement.
+5. Assess QuickBooks and Sage connections only after the Xero workflow proves useful.
