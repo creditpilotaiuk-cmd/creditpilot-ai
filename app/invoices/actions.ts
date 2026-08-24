@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { invoiceLimitReached } from "@/lib/plan";
+import { brandedEmail, textToEmailHtml } from "@/lib/email-brand";
 
 function text(formData: FormData, key: string) { const value = formData.get(key); return typeof value === "string" ? value.trim() : ""; }
 
@@ -114,7 +115,8 @@ export async function sendInvoice(formData: FormData) {
   const from = process.env.RESEND_FROM_EMAIL;
   if (!key || !from) redirect("/invoices?error=email-not-configured");
   const payment = invoice.company.paymentMethods === "BANK" || invoice.company.paymentMethods === "BOTH" ? `\n\nPayment by bank transfer:\nAccount name: ${invoice.company.bankAccountName || "Please contact us"}\nSort code: ${invoice.company.bankSortCode || "Please contact us"}\nAccount number: ${invoice.company.bankAccountNumber || "Please contact us"}\nReference: ${invoice.company.paymentReference || invoice.number}` : "";
-  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [invoice.customer.email], subject: `Invoice ${invoice.number} from ${invoice.company.name}`, text: `Hello ${invoice.customer.contactName || invoice.customer.name},\n\nPlease find your invoice details below.\n\nInvoice: ${invoice.number}\nAmount: £${Number(invoice.amount).toFixed(2)}\nDue date: ${invoice.dueDate.toLocaleDateString("en-GB")}${payment}\n\nPlease contact us if you have any questions.\n\nKind regards\n${invoice.company.name}` }) });
+  const emailText = `Hello ${invoice.customer.contactName || invoice.customer.name},\n\nPlease find your invoice details below.\n\nInvoice: ${invoice.number}\nAmount: £${Number(invoice.amount).toFixed(2)}\nDue date: ${invoice.dueDate.toLocaleDateString("en-GB")}${payment}\n\nPlease contact us if you have any questions.\n\nKind regards\n${invoice.company.name}`;
+  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [invoice.customer.email], subject: `Invoice ${invoice.number} from ${invoice.company.name}`, text: emailText, html: brandedEmail(`<p>${textToEmailHtml(emailText)}</p>`, invoice.company.name) }) });
   if (response.ok) await prisma.$transaction([
     prisma.invoice.update({ where: { id: invoice.id }, data: { status: "SENT" } }),
     prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "INVOICE_SENT", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: invoice.status, newValue: { status: "SENT", recipient: invoice.customer.email }, customerId: invoice.customerId, ipAddress: null } } }),

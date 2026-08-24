@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createInvoiceToken } from "@/lib/invoice-link";
 import { detectSmartReminderPattern } from "@/lib/smart-reminder-timing";
+import { brandedEmail, textToEmailHtml } from "@/lib/email-brand";
 
 export async function generateReminderDrafts() {
   const session = await auth();
@@ -146,7 +147,8 @@ export async function sendReminder(formData: FormData) {
   const stripeDetails = reminder.company.paymentMethods === "STRIPE" || reminder.company.paymentMethods === "BOTH" ? "\n\nYou can also pay securely online by card using the payment option provided by our accounts team." : "";
   const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://creditpilotai.co.uk";
   const invoiceUrl = `${baseUrl.replace(/\/$/, "")}/invoice/${createInvoiceToken(reminder.invoice.id)}`;
-  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [reminder.customer.email], subject: reminder.subject, text: `${reminder.body}${paymentDetails}${stripeDetails}\n\nView your invoice and payment options securely:\n${invoiceUrl}` }) });
+  const emailText = `${reminder.body}${paymentDetails}${stripeDetails}\n\nView your invoice and payment options securely:\n${invoiceUrl}`;
+  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [reminder.customer.email], subject: reminder.subject, text: emailText, html: brandedEmail(`<p>${textToEmailHtml(emailText)}</p>`, reminder.company.name) }) });
   if (!response.ok) { await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "FAILED" } }); redirect("/reminders?error=send-failed"); }
   await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "SENT", sentAt: new Date() } });
   await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "REMINDER_SENT", entity: "Invoice", entityId: reminder.invoiceId, metadata: { previousValue: "SCHEDULED", newValue: { status: "SENT", recipient: reminder.customer.email, stage: reminder.stage }, customerId: reminder.customerId, ipAddress: null } } });
