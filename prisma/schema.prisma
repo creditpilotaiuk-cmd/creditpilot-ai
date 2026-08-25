@@ -82,7 +82,8 @@ model User {
   updatedAt      DateTime @updatedAt
   company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
     auditEvents    AuditEvent[]
-    passwordResetTokens PasswordResetToken[]
+  passwordResetTokens PasswordResetToken[]
+  collectionCases Invoice[] @relation("CollectionOwner")
   @@index([companyId])
 }
 
@@ -129,15 +130,22 @@ model Invoice {
   status          InvoiceStatus @default(OUTSTANDING)
   reminderStage   Int           @default(0)
   source          String?       // CSV, Xero, QuickBooks, etc.
+  collectionOwnerId String?
+  nextAction      String?
+  nextActionAt    DateTime?
+  nextActionCompletedAt DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
   reminders       Reminder[]
   paymentPromises PaymentPromise[]
+  collectionOwner User?         @relation("CollectionOwner", fields: [collectionOwnerId], references: [id], onDelete: SetNull)
   @@unique([companyId, number])
   @@index([companyId, status, dueDate])
   @@index([customerId])
+  @@index([companyId, nextActionAt])
+  @@index([collectionOwnerId])
 }
 
 model Reminder {
