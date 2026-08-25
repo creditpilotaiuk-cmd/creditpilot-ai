@@ -7,10 +7,34 @@ import { requestCancellation } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+const coreFoundation = [
+  "Daily prioritised chase list",
+  "Explainable CreditPilot Priority Score",
+  "Three-stage reminder workflow",
+  "Customer statements",
+  "Human approval and a clear audit trail",
+];
+
 const plans = [
-  { name: "Starter", price: "£49", description: "For small teams building a consistent credit-control process.", features: ["Up to 150 active invoices", "Prioritised collection cases", "Three-stage reminders", "Customer statements"] },
-  { name: "Growth", price: "£129", description: "For growing businesses managing a busier debtor book.", features: ["Up to 750 active invoices", "Everything in Starter", "Payment-promise tracking", "Dispute and case controls"], featured: true },
-  { name: "Professional", price: "£249", description: "For larger teams needing deeper control and evidence.", features: ["Up to 2,500 active invoices", "Everything in Growth", "Collection history", "Evidence-pack exports"] },
+  {
+    name: "Starter",
+    price: "£49",
+    description: "For small teams establishing a consistent credit-control rhythm.",
+    services: ["Up to 150 active invoices", "Prioritised collection cases", "Core email support"],
+  },
+  {
+    name: "Growth",
+    price: "£129",
+    description: "For growing businesses managing a busier debtor book and more complex cases.",
+    services: ["Up to 750 active invoices", "Payment-promise tracking", "Dispute and case controls", "Payment-behaviour recommendations"],
+    featured: true,
+  },
+  {
+    name: "Professional",
+    price: "£249",
+    description: "For larger teams that need deeper control, history and escalation evidence.",
+    services: ["Up to 2,500 active invoices", "Everything in Growth services", "Complete collection history", "Evidence-pack exports"],
+  },
 ];
 
 export default async function PricingPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
@@ -33,14 +57,21 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
             <p className="mt-4 max-w-3xl leading-7 text-slate-600">Use every currently available collection feature while we validate the workflows with UK businesses. No subscription charge will be made, no card is required and no paid plan will begin automatically.</p>
           </section>
           <section className="mt-8">
-            <div className="max-w-3xl"><p className="eyebrow">After the beta</p><h2 className="mt-2 text-2xl font-bold text-ink">Simple monthly plans when you choose to continue</h2><p className="mt-3 leading-7 text-slate-600">These are the planned post-beta prices. We will give you clear notice before billing begins, and you will actively choose a plan.</p></div>
+            <div className="max-w-3xl"><p className="eyebrow">After the beta</p><h2 className="mt-2 text-2xl font-bold text-ink">One core foundation, with services that scale</h2><p className="mt-3 leading-7 text-slate-600">Every plan includes the CreditPilot collection workspace. Choose the service level and invoice capacity that fit your business when you are ready to continue.</p></div>
+            <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/60 p-6">
+              <p className="eyebrow">Core foundation · included in every plan</p>
+              <ul className="mt-4 grid gap-3 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-3">{coreFoundation.map((feature) => <li key={feature}>✓ {feature}</li>)}</ul>
+            </div>
             <div className="mt-6 grid gap-5 lg:grid-cols-3">
               {plans.map((plan) => (
                 <article key={plan.name} className={`flex flex-col rounded-2xl border bg-white p-6 shadow-card ${plan.featured ? "border-electric ring-2 ring-electric/10" : "border-slate-200"}`}>
                   <div className="flex items-start justify-between gap-3"><h3 className="text-xl font-bold text-ink">{plan.name}</h3>{plan.featured && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-electric">Most popular</span>}</div>
                   <p className="mt-5 text-4xl font-bold text-ink">{plan.price}<span className="text-sm font-medium text-slate-500"> / month</span></p>
                   <p className="mt-4 min-h-12 text-sm leading-6 text-slate-600">{plan.description}</p>
-                  <ul className="mt-6 flex-1 space-y-3 text-sm text-slate-700">{plan.features.map((feature) => <li key={feature}>✓ {feature}</li>)}</ul>
+                  <div className="mt-6 flex-1 border-t border-slate-100 pt-5">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-electric">Services included</p>
+                    <ul className="mt-4 space-y-3 text-sm text-slate-700">{plan.services.map((service) => <li key={service}>✓ {service}</li>)}</ul>
+                  </div>
                   <button type="button" disabled className="mt-7 w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-bold text-slate-500">Available after beta</button>
                 </article>
               ))}
