@@ -10,7 +10,7 @@ const groups = [
   { label: "Collection work", links: [[Bell, "Chase communications", "/reminders"], [ClipboardList, "Promises & payments", "/payments"], [ClipboardList, "Statements", "/statements"], [MessageSquareText, "Collection timeline", "/communications"]] },
   { label: "Insights", links: [[BarChart3, "Collection analytics", "/reports"]] },
   { label: "Account", links: [[Settings, "Settings & integrations", "/settings"], [CreditCard, "Membership", "/pricing"], [LifeBuoy, "Report a problem", "/support"]] },
-  { label: "Legal", links: [[Scale, "Terms", "/terms"], [ShieldCheck, "Privacy", "/privacy"]] },
+  { label: "Legal", links: [[ShieldCheck, "Compliance centre", "/compliance"], [Scale, "Terms", "/terms"], [ShieldCheck, "Privacy", "/privacy"]] },
 ] as const;
 
 export function DashboardNav() {
