@@ -7,6 +7,6 @@ export function MarketingNav() {
     <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
 <Link href="/#features">Features</Link><Link href="/#how-it-works">How it works</Link><Link href="/#difference">Why CreditPilot</Link><Link href="/compliance">Compliance</Link><Link href="/#pricing">Beta access</Link>
     </nav>
-    <div className="flex items-center gap-2 sm:gap-3"><Link className="text-sm font-semibold text-navy" href="/login">Log in</Link><Link className="button-primary px-3 py-2.5 sm:px-4" href="/register">Start free beta</Link></div>
+    <div className="flex items-center gap-2 sm:gap-3"><Link className="text-sm font-semibold text-navy" href="/dashboard">Dashboard</Link><Link className="button-primary px-3 py-2.5 sm:px-4" href="/register">Start free beta</Link></div>
   </header>;
 }
