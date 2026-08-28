@@ -7,34 +7,14 @@ import { requestCancellation } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-const coreFoundation = [
-  "Daily prioritised chase list",
-  "Explainable CreditPilot Priority Score",
-  "Three-stage reminder workflow",
-  "Customer statements",
-  "Human approval and a clear audit trail",
+const plans = [
+  { name: "Starter", price: "£49", strapline: "Essential credit control for small businesses", description: "For small businesses establishing a reliable and consistent credit-control process.", limit: "Up to 150 active invoices", features: ["Credit-control dashboard and prioritised chase list", "Explainable CreditPilot Priority Score", "Customer and invoice management with CSV import", "Three-stage editable reminder workflow", "Human approval before reminders are sent", "Customer statements and bank-transfer instructions", "Payment promises and missed-promise identification", "Basic dispute, chase-hold and collection timeline", "Invoice ageing, audit trail and workspace export", "Legal-protection checklist and core email support"] },
+  { name: "Growth", price: "£129", strapline: "Intelligent credit control for growing businesses", description: "For established SMEs with a busier debtor book and more detailed follow-up needs.", limit: "Up to 750 active invoices", featured: true, features: ["Everything included in Starter", "Copilot action plans and workspace questions", "AI-assisted reply analysis and suggested wording", "Smart reminder timing and recommended next actions", "Payment-behaviour recommendations and credit-limit guidance", "Broken-promise monitoring and alerts", "Advanced disputes, chase holds and case ownership", "Complete customer collection timeline", "Enhanced analytics, promise-kept and payment-rate reporting", "Optional Creditsafe checks once commercially configured"] },
+  { name: "Professional", price: "£249", strapline: "Complete oversight and evidence for larger teams", description: "For finance and credit-control teams requiring deeper history, evidence and escalation support.", limit: "Up to 2,500 active invoices", features: ["Everything included in Growth", "Complete invoice and customer collection histories", "Detailed reminder, promise, dispute and chase-hold history", "Case-ownership decision history and complete audit trail", "Communication approval, sending and delivery evidence", "Legal-protection status and deeper escalation evidence", "Downloadable customer collection packs", "Evidence-pack exports", "Premium risk and payment-behaviour insights", "Higher-volume analytics and collection management"] },
 ];
 
-const plans = [
-  {
-    name: "Starter",
-    price: "£49",
-    description: "For small teams establishing a consistent credit-control rhythm.",
-    services: ["Up to 150 active invoices", "Prioritised collection cases", "Core email support"],
-  },
-  {
-    name: "Growth",
-    price: "£129",
-    description: "For growing businesses managing a busier debtor book and more complex cases.",
-    services: ["Up to 750 active invoices", "Payment-promise tracking", "Dispute and case controls", "Payment-behaviour recommendations"],
-    featured: true,
-  },
-  {
-    name: "Professional",
-    price: "£249",
-    description: "For larger teams that need deeper control, history and escalation evidence.",
-    services: ["Up to 2,500 active invoices", "Everything in Growth services", "Complete collection history", "Evidence-pack exports"],
-  },
+const comparison = [
+  ["Monthly price", "£49", "£129", "£249"], ["Active invoices", "150", "750", "2,500"], ["Dashboard, chase list and Priority Score", "Included", "Included", "Included"], ["Three-stage reminders with human approval", "Included", "Included", "Included"], ["Statements and payment promises", "Included", "Included", "Included"], ["Disputes, chase holds and timeline", "Basic", "Advanced", "Advanced"], ["Copilot action plans and reply analysis", "—", "Included", "Included"], ["Smart timing and behaviour recommendations", "—", "Included", "Premium"], ["Collection analytics", "Basic", "Enhanced", "Higher volume"], ["External company-risk checks", "—", "Optional add-on", "Planned allowance"], ["Complete audit and decision history", "—", "—", "Included"], ["Collection and evidence-pack exports", "—", "—", "Included"],
 ];
 
 export default async function PricingPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
@@ -43,43 +23,18 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
   const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
   const params = await searchParams;
-
   return (
-    <main className="flex min-h-screen">
-      <DashboardSidebar />
-      <div className="min-w-0 flex-1">
-        <header className="border-b bg-white px-5 py-4 sm:px-8"><p className="text-sm text-slate-500">Account and billing</p><h1 className="text-xl font-bold text-ink">Membership</h1></header>
-        <div className="mx-auto max-w-6xl p-5 sm:p-8">
-          <Link href="/settings" className="text-sm font-semibold text-slate-500">← Back to settings</Link>
-          {params.success && <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-sm font-semibold text-emerald-700">Checkout complete. Your account will update once payment is confirmed.</p>}
-          <section className="mt-6 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-7 shadow-card sm:p-9">
-            <p className="eyebrow">Founding beta access</p><h2 className="mt-3 text-3xl font-bold text-ink">Free access throughout the beta</h2>
-            <p className="mt-4 max-w-3xl leading-7 text-slate-600">Use every currently available collection feature while we validate the workflows with UK businesses. No subscription charge will be made, no card is required and no paid plan will begin automatically.</p>
-          </section>
-          <section className="mt-8">
-            <div className="max-w-3xl"><p className="eyebrow">After the beta</p><h2 className="mt-2 text-2xl font-bold text-ink">One core foundation, with services that scale</h2><p className="mt-3 leading-7 text-slate-600">Every plan includes the CreditPilot collection workspace. Choose the service level and invoice capacity that fit your business when you are ready to continue.</p></div>
-            <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/60 p-6">
-              <p className="eyebrow">Core foundation · included in every plan</p>
-              <ul className="mt-4 grid gap-3 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-3">{coreFoundation.map((feature) => <li key={feature}>✓ {feature}</li>)}</ul>
-            </div>
-            <div className="mt-6 grid gap-5 lg:grid-cols-3">
-              {plans.map((plan) => (
-                <article key={plan.name} className={`flex flex-col rounded-2xl border bg-white p-6 shadow-card ${plan.featured ? "border-electric ring-2 ring-electric/10" : "border-slate-200"}`}>
-                  <div className="flex items-start justify-between gap-3"><h3 className="text-xl font-bold text-ink">{plan.name}</h3>{plan.featured && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-electric">Most popular</span>}</div>
-                  <p className="mt-5 text-4xl font-bold text-ink">{plan.price}<span className="text-sm font-medium text-slate-500"> / month</span></p>
-                  <p className="mt-4 min-h-12 text-sm leading-6 text-slate-600">{plan.description}</p>
-                  <div className="mt-6 flex-1 border-t border-slate-100 pt-5">
-                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-electric">Services included</p>
-                    <ul className="mt-4 space-y-3 text-sm text-slate-700">{plan.services.map((service) => <li key={service}>✓ {service}</li>)}</ul>
-                  </div>
-                  <button type="button" disabled className="mt-7 w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-bold text-slate-500">Available after beta</button>
-                </article>
-              ))}
-            </div>
-          </section>
-          <section className="mt-8 rounded-xl border border-rose-100 bg-rose-50 p-6"><h3 className="font-bold text-ink">Need to cancel?</h3><p className="mt-2 max-w-2xl text-sm text-slate-600">Your data is not deleted immediately. Submit a request and we’ll confirm the cancellation.</p><form action={requestCancellation} className="mt-4"><button className="rounded-lg border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-700" type="submit">Request cancellation</button></form></section>
-        </div>
+    <main className="flex min-h-screen"><DashboardSidebar /><div className="min-w-0 flex-1">
+      <header className="border-b bg-white px-5 py-4 sm:px-8"><p className="text-sm text-slate-500">Account and billing</p><h1 className="text-xl font-bold text-ink">Membership</h1></header>
+      <div className="mx-auto max-w-7xl p-5 sm:p-8"><Link href="/settings" className="text-sm font-semibold text-slate-500">← Back to settings</Link>
+        {params.success && <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-sm font-semibold text-emerald-700">Checkout complete. Your account will update once payment is confirmed.</p>}
+        <section className="mt-6 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-7 shadow-card sm:p-9"><p className="eyebrow">Founding beta · £0</p><h2 className="mt-3 text-3xl font-bold text-ink">Every current feature, free throughout the beta</h2><p className="mt-4 max-w-3xl leading-7 text-slate-600">There is no subscription charge, card, contract or automatic paid conversion. We will give you advance notice before billing begins, and you must actively select a membership to continue.</p><div className="mt-6 rounded-xl border border-violet-100 bg-white p-5"><p className="text-sm font-bold text-violet-700">Founding-customer benefit</p><p className="mt-2 text-sm leading-6 text-slate-600">Choose Starter or Growth after the beta and receive the next membership level&apos;s features for your first six months while paying your chosen plan&apos;s price. After six months, access automatically returns to the selected plan unless you actively choose to upgrade. Professional customers remain on Professional.</p></div></section>
+        <section className="mt-10"><div className="max-w-3xl"><p className="eyebrow">After the beta</p><h2 className="mt-2 text-2xl font-bold text-ink">Planned monthly memberships</h2><p className="mt-3 leading-7 text-slate-600">These are planned post-beta prices. Final prices and whether VAT is included or added will be confirmed before any paid membership begins.</p></div><div className="mt-6 grid gap-5 xl:grid-cols-3">{plans.map(plan => <article key={plan.name} className={`flex flex-col rounded-2xl border bg-white p-6 shadow-card ${plan.featured ? "border-electric ring-2 ring-electric/10" : "border-slate-200"}`}><div className="flex items-start justify-between gap-3"><div><h3 className="text-xl font-bold text-ink">{plan.name}</h3><p className="mt-1 text-sm font-semibold text-electric">{plan.strapline}</p></div>{plan.featured && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-electric">Most popular</span>}</div><p className="mt-5 text-4xl font-bold text-ink">{plan.price}<span className="text-sm font-medium text-slate-500"> / month</span></p><p className="mt-4 min-h-12 text-sm leading-6 text-slate-600">{plan.description}</p><p className="mt-5 rounded-lg bg-sky px-4 py-3 text-sm font-bold text-ink">{plan.limit}</p><ul className="mt-6 flex-1 space-y-3 text-sm leading-6 text-slate-700">{plan.features.map(feature => <li key={feature} className="flex gap-2"><span className="font-bold text-emerald-600">✓</span><span>{feature}</span></li>)}</ul><button type="button" disabled className="mt-7 w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-bold text-slate-500">Available after beta</button></article>)}</div></section>
+        <section className="mt-10 overflow-hidden rounded-2xl border bg-white shadow-card"><div className="border-b p-6"><p className="eyebrow">Compare</p><h2 className="mt-2 text-2xl font-bold text-ink">Membership comparison</h2></div><div className="overflow-x-auto"><table className="min-w-[760px] w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-4">Benefit</th><th className="px-5 py-4">Starter</th><th className="px-5 py-4">Growth</th><th className="px-5 py-4">Professional</th></tr></thead><tbody className="divide-y">{comparison.map(([benefit, starter, growth, professional]) => <tr key={benefit}><th className="px-5 py-4 font-semibold text-ink">{benefit}</th><td className="px-5 py-4 text-slate-600">{starter}</td><td className="px-5 py-4 text-slate-600">{growth}</td><td className="px-5 py-4 text-slate-600">{professional}</td></tr>)}</tbody></table></div></section>
+        <section className="mt-10 grid gap-5 lg:grid-cols-2"><article className="rounded-2xl border bg-white p-6 shadow-card"><p className="eyebrow">Optional services</p><h2 className="mt-2 text-xl font-bold text-ink">Support when you need more help</h2><ul className="mt-5 space-y-2 text-sm leading-6 text-slate-600">{["Additional invoice capacity and users", "CSV cleansing and initial migration", "Accounting-integration setup when connections launch", "Custom reminder-template configuration", "Team training and workflow configuration", "Historical collection-data migration", "Advanced evidence and escalation support"].map(item => <li key={item}>✓ {item}</li>)}</ul><p className="mt-5 text-xs leading-5 text-slate-500">Assisted onboarding will be quoted according to scope. Indicative one-time pricing is £199–£999 and will be confirmed before work begins.</p></article><article className="rounded-2xl border border-amber-100 bg-amber-50/50 p-6"><p className="eyebrow">Variable-cost services</p><h2 className="mt-2 text-xl font-bold text-ink">Company-risk checks</h2><p className="mt-4 text-sm leading-6 text-slate-600">Creditsafe checks are not currently available and will not be advertised as unlimited. Launch depends on a supplier agreement, API configuration, data rights and confirmed per-check costs. Growth is expected to offer checks as a paid add-on; Professional is expected to include an allowance followed by usage-based bundles.</p></article></section>
+        <section className="mt-8 rounded-xl border border-rose-100 bg-rose-50 p-6"><h3 className="font-bold text-ink">Need to cancel?</h3><p className="mt-2 max-w-2xl text-sm text-slate-600">Your data is not deleted immediately. Submit a request and we&apos;ll confirm the cancellation.</p><form action={requestCancellation} className="mt-4"><button className="rounded-lg border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-700" type="submit">Request cancellation</button></form></section>
       </div>
-    </main>
+    </div></main>
   );
 }
+
