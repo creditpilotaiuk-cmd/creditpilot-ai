@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 import { auth } from "@/lib/auth";
 import { Logo } from "./logo";
 
 export async function MarketingNav() {
+  noStore();
   const session = await auth();
   const signedIn = Boolean(session?.user?.email);
 
@@ -14,3 +16,4 @@ export async function MarketingNav() {
     <div className="flex items-center gap-2 sm:gap-3">{signedIn ? <Link className="button-primary px-3 py-2.5 sm:px-4" href="/dashboard">Dashboard</Link> : <><Link className="text-sm font-semibold text-navy" href="/login">Log in</Link><Link className="button-primary px-3 py-2.5 sm:px-4" href="/register">Start free beta</Link></>}</div>
   </header>;
 }
+
