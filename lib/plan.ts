@@ -9,6 +9,7 @@ export async function invoiceLimitReached(companyId: string, additional = 1) {
   const plan = (company?.plan ?? "BETA").toUpperCase();
   const limit = plan === "PROFESSIONAL" ? PROFESSIONAL_INVOICE_LIMIT : plan === "GROWTH" ? GROWTH_INVOICE_LIMIT : plan === "STARTER" ? STARTER_INVOICE_LIMIT : null;
   if (!limit) return false;
-  const activeInvoices = await prisma.invoice.count({ where: { companyId, status: { in: ["DRAFT", "SENT", "OUTSTANDING", "OVERDUE", "PAID"] } } });
+  const activeInvoices = await prisma.invoice.count({ where: { companyId, status: { notIn: ["PAID", "VOID", "WRITTEN_OFF"] } } });
   return activeInvoices + additional > limit;
 }
+
