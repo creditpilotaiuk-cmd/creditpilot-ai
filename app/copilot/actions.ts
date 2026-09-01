@@ -15,18 +15,25 @@ export async function askCopilot(formData: FormData) {
     include: { customer: true, reminders: { orderBy: { createdAt: "desc" }, take: 5 } },
     orderBy: { dueDate: "asc" }, take: 200,
   });
-  const overdue = invoices.filter((i) => i.status === "OVERDUE");
+  const now = new Date();
+  const nextWeek = new Date(now); nextWeek.setDate(now.getDate() + 7);
+  const collectibleStatuses = ["SENT", "OUTSTANDING", "OVERDUE", "DISPUTED", "ON_HOLD", "PAYMENT_PLAN", "LEGAL_ESCALATION"];
+  const activeInvoices = invoices.filter((i) => collectibleStatuses.includes(i.status));
+  const overdue = activeInvoices.filter((i) => i.dueDate < now);
+  const dueSoon = activeInvoices.filter((i) => i.dueDate >= now && i.dueDate <= nextWeek);
   const money = (value: unknown) => `£${Number(value).toFixed(2)}`;
   const lower = question.toLowerCase();
-  const largest = invoices.reduce((max, i) => Number(i.amount) > Number(max?.amount ?? 0) ? i : max, invoices[0]);
+  const largest = activeInvoices.reduce((max, i) => Number(i.amount) > Number(max?.amount ?? 0) ? i : max, activeInvoices[0]);
   const chaseList = [...overdue].sort((a, b) => Number(b.amount) - Number(a.amount) || b.reminders.length - a.reminders.length).slice(0, 5);
   const fallback = lower.includes("chase") || lower.includes("priority") || lower.includes("today")
     ? chaseList.length ? `Chase these customers first today, prioritised by balance and reminder history:\n${chaseList.map((i, index) => `${index + 1}. ${i.customer.name} — ${money(i.amount)} (${i.number}, ${i.reminders.length} reminder(s))`).join("\n")}` : "There are no overdue customers to chase today. Review upcoming due invoices instead."
+    : lower.includes("due this week") || lower.includes("next 7 days")
+    ? dueSoon.length ? `${money(dueSoon.reduce((sum, i) => sum + Number(i.amount), 0))} is due in the next 7 days across ${dueSoon.length} invoice${dueSoon.length === 1 ? "" : "s"}.\n${dueSoon.map((i) => `• ${i.number} — ${i.customer.name} — ${money(i.amount)} — due ${i.dueDate.toLocaleDateString("en-GB")}`).join("\n")}` : "There are no open invoices due in the next 7 days."
     : lower.includes("overdue")
     ? overdue.length ? `You have ${overdue.length} overdue invoice${overdue.length === 1 ? "" : "s"}, totalling ${money(overdue.reduce((sum, i) => sum + Number(i.amount), 0))}.\n${overdue.map((i) => `• ${i.number} — ${i.customer.name} — ${money(i.amount)} — ${i.reminders.length} reminder(s)`).join("\n")}` : "There are no overdue invoices."
     : lower.includes("most") || lower.includes("owe")
       ? largest ? `The largest outstanding balance is ${money(largest.amount)} for ${largest.customer.name} (${largest.number}).` : "There are no outstanding invoices."
-      : "I can help with overdue invoices, largest balances, customers to chase, payment promises, reminder activity, and cash-flow priorities.";
+      : "I can help with overdue invoices, amounts due this week, largest outstanding balances, customers to chase, payment promises, reminder activity, and cash-flow priorities.";
   let answer = fallback;
   const key = process.env.OPENAI_API_KEY;
   if (key) {
