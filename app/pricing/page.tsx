@@ -85,13 +85,6 @@ const premiumAddOns = [
     term: "/ user / month",
     description: "Add a user where advanced team controls apply.",
   },
-  {
-    name: "Assisted onboarding",
-    price: "£199–£999",
-    term: "one-off",
-    description: "CSV cleansing, migration, workflow setup, reminder templates, integration setup or team training—priced to scope.",
-    wide: true,
-  },
 ];
 
 export default async function PricingPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
