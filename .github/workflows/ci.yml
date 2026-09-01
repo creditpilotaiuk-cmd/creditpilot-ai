@@ -15,4 +15,6 @@ jobs:
       - run: npm install
       - run: npm run db:generate
       - run: npm run lint
-      - run: npm run build
+      # Prisma migrations are a deployment concern and require production
+      # database credentials. CI only needs to prove the application compiles.
+      - run: npx next build
