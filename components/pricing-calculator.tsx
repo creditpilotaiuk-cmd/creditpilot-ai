@@ -13,7 +13,7 @@ const memberships = [
     userDiscount: null,
     invoices: "150 active invoices",
     description: "For small businesses establishing a reliable credit-control process.",
-    accent: "from-slate-700 to-slate-900",
+    accent: "from-white via-cyan-50 to-blue-100",
   },
   {
     name: "Growth",
@@ -24,7 +24,7 @@ const memberships = [
     invoices: "750 active invoices",
     description: "For growing SMEs with a busier debtor book and regular follow-up activity.",
     featured: true,
-    accent: "from-blue-700 to-blue-500",
+    accent: "from-white via-blue-50 to-violet-100",
   },
   {
     name: "Professional",
@@ -34,7 +34,7 @@ const memberships = [
     userDiscount: 10,
     invoices: "2,500 active invoices",
     description: "For larger teams needing deeper oversight, history and evidence.",
-    accent: "from-indigo-800 to-blue-700",
+    accent: "from-white via-indigo-50 to-violet-100",
   },
 ];
 
@@ -76,13 +76,13 @@ export function PricingCalculator() {
         const extraUsers = Math.max(0, users - 1);
         const monthlyPrice = membership.basePrice + (membership.additionalUserPrice ?? 0) * extraUsers;
 
-        return <article key={membership.name} className={`relative flex flex-col overflow-hidden rounded-3xl border bg-white shadow-card ${membership.featured ? "border-electric ring-2 ring-electric/10" : "border-slate-200"}`}>
-          <div className={`bg-gradient-to-br ${membership.accent} p-7 text-white`}>
-            {membership.featured && <span className="mb-5 inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-bold">Most popular</span>}
+        return <article key={membership.name} className={`group relative flex flex-col overflow-hidden rounded-3xl border bg-gradient-to-br ${membership.accent} shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-xl ${membership.name === "Starter" ? "border-cyan-200" : membership.featured ? "border-electric ring-2 ring-electric/10" : "border-violet-200"}`}>
+          <div className="relative p-7 text-ink">
+            {membership.featured && <span className="mb-5 inline-flex rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-3 py-1 text-xs font-bold text-white shadow-md">Most popular</span>}
             <h3 className="text-3xl font-bold">{membership.name}</h3>
-            <p className="mt-2 text-sm text-blue-100">{membership.invoices}</p>
+            <p className="mt-2 text-sm font-semibold text-blue-700">{membership.invoices}</p>
           </div>
-          <div className="flex flex-1 flex-col p-7">
+          <div className="relative flex flex-1 flex-col border-t border-white/70 bg-white/45 p-7 backdrop-blur-sm">
             <div className="flex items-end gap-2">
               <span className="text-4xl font-bold tracking-tight text-ink">£{money(monthlyPrice)}</span>
               <span className="pb-1.5 text-sm font-semibold text-slate-500">/ month</span>
