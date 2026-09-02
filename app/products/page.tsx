@@ -148,27 +148,27 @@ export default function ProductsPage() {
     </section>
 
     <section className="border-y border-slate-200 bg-white px-6 py-20 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-8">
-        {plans.map((plan,index) => <article id={plan.id} key={plan.id} className="scroll-mt-24 overflow-hidden rounded-3xl border border-slate-200 bg-[#f8fafc]">
-          <div className="grid lg:grid-cols-[0.72fr_1.28fr]">
-            <div className={`p-7 sm:p-9 ${plan.featured ? "bg-gradient-to-br from-[#10285f] to-[#2764ff] text-white" : "bg-slate-100 text-ink"}`}>
-              <span className={`grid h-12 w-12 place-items-center rounded-xl ${plan.featured ? "bg-white/15 text-white" : "bg-white text-electric"}`}>{index === 1 ? <Sparkles size={23} /> : <Layers3 size={23} />}</span>
-              <p className={`mt-7 text-xs font-bold uppercase tracking-[0.16em] ${plan.featured ? "text-blue-200" : "text-electric"}`}>{plan.strapline}</p>
-              <h2 className="mt-3 text-3xl font-bold">{plan.name}</h2>
-              <p className={`mt-4 leading-7 ${plan.featured ? "text-blue-100" : "text-slate-600"}`}>{plan.description}</p>
-              <p className={`mt-6 text-sm font-bold ${plan.featured ? "text-white" : "text-ink"}`}>{plan.limit}</p>
-              <p className="mt-2 text-3xl font-bold">{plan.price}<span className={`ml-2 text-sm ${plan.featured ? "text-blue-200" : "text-slate-500"}`}>/ month</span></p>
+      <div className="mx-auto max-w-6xl space-y-5">
+        {plans.map((plan,index) => <article id={plan.id} key={plan.id} className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-[#f8fafc] shadow-sm transition hover:shadow-md">
+          <div className="grid lg:grid-cols-[0.62fr_1.38fr]">
+            <div className={`p-6 sm:p-7 ${plan.featured ? "bg-gradient-to-br from-[#10285f] to-[#2764ff] text-white" : "bg-slate-100 text-ink"}`}>
+              <span className={`grid h-10 w-10 place-items-center rounded-xl ${plan.featured ? "bg-white/15 text-white" : "bg-white text-electric"}`}>{index === 1 ? <Sparkles size={20} /> : <Layers3 size={20} />}</span>
+              <p className={`mt-5 text-[10px] font-bold uppercase tracking-[0.14em] ${plan.featured ? "text-blue-200" : "text-electric"}`}>{plan.strapline}</p>
+              <h2 className="mt-2 text-2xl font-bold">{plan.name}</h2>
+              <p className={`mt-3 text-sm leading-6 ${plan.featured ? "text-blue-100" : "text-slate-600"}`}>{plan.description}</p>
+              <p className={`mt-4 text-sm font-bold ${plan.featured ? "text-white" : "text-ink"}`}>{plan.limit}</p>
+              <p className="mt-2 text-2xl font-bold">{plan.price}<span className={`ml-2 text-sm ${plan.featured ? "text-blue-200" : "text-slate-500"}`}>/ month</span></p>
             </div>
-            <div className="p-7 sm:p-9">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">What this membership offers</p>
-              <div className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
-                {plan.features.map(feature => <div key={feature} className="flex gap-3"><CheckCircle2 className="mt-0.5 shrink-0 text-emerald-500" size={19} /><p className="text-sm leading-6 text-slate-700">{feature}</p></div>)}
+            <div className="p-6 sm:p-7">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">What this membership offers</p>
+              <div className="mt-4 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
+                {plan.features.map(feature => <div key={feature} className="flex gap-3"><CheckCircle2 className="mt-0.5 shrink-0 text-emerald-500" size={16} /><p className="text-[13px] leading-5 text-slate-700">{feature}</p></div>)}
               </div>
-              <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50/70 p-5">
+              <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50/70 p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-electric">Best suited to</p>
                 <p className="mt-2 text-sm leading-6 text-slate-700">{plan.bestFor}</p>
               </div>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-5 flex flex-wrap gap-3">
                 <Link href="/register" className="button-primary">Start free beta</Link>
                 <Link href="#plans" className="button-secondary">Back to memberships</Link>
               </div>
