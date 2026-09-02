@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, BarChart3, Bot, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, FileText, Plus, ReceiptText, Send, Sparkles, TrendingUp, Users, Zap, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRight, Bot, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, FileText, Plus, ReceiptText, Send, Sparkles, Users, Zap, type LucideIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
