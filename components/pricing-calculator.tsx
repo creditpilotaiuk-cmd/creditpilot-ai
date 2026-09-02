@@ -8,8 +8,9 @@ const memberships = [
   {
     name: "Starter",
     basePrice: 49,
-    userPriceMin: null,
-    userPriceMax: null,
+    additionalUserPrice: null,
+    additionalUserListPrice: null,
+    userDiscount: null,
     invoices: "150 active invoices",
     description: "For small businesses establishing a reliable credit-control process.",
     accent: "from-slate-700 to-slate-900",
@@ -17,8 +18,9 @@ const memberships = [
   {
     name: "Growth",
     basePrice: 129,
-    userPriceMin: 10,
-    userPriceMax: 15,
+    additionalUserPrice: 15.99,
+    additionalUserListPrice: 15.99,
+    userDiscount: null,
     invoices: "750 active invoices",
     description: "For growing SMEs with a busier debtor book and regular follow-up activity.",
     featured: true,
@@ -27,13 +29,18 @@ const memberships = [
   {
     name: "Professional",
     basePrice: 249,
-    userPriceMin: 15,
-    userPriceMax: 20,
+    additionalUserPrice: 20.69,
+    additionalUserListPrice: 22.99,
+    userDiscount: 10,
     invoices: "2,500 active invoices",
     description: "For larger teams needing deeper oversight, history and evidence.",
     accent: "from-indigo-800 to-blue-700",
   },
 ];
+
+function money(value: number) {
+  return value.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 export function PricingCalculator() {
   const [users, setUsers] = useState(1);
@@ -41,8 +48,8 @@ export function PricingCalculator() {
   return <div className="overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-b from-white via-blue-50/60 to-slate-100 shadow-[0_30px_80px_rgba(30,64,175,0.14)]">
     <div className="px-6 pb-10 pt-10 text-center sm:px-10">
       <p className="text-xs font-bold uppercase tracking-[0.2em] text-electric">Team pricing calculator</p>
-      <h2 className="mx-auto mt-3 max-w-3xl text-3xl font-bold tracking-tight text-ink sm:text-4xl">See your estimated monthly membership price.</h2>
-      <p className="mx-auto mt-4 max-w-2xl leading-7 text-slate-600">Move the bar to select your team size. Growth and Professional price ranges update instantly in sterling using the planned additional-user ranges.</p>
+      <h2 className="mx-auto mt-3 max-w-3xl text-3xl font-bold tracking-tight text-ink sm:text-4xl">See your monthly membership price.</h2>
+      <p className="mx-auto mt-4 max-w-2xl leading-7 text-slate-600">Move the bar to select your team size. Growth and Professional prices update instantly in sterling.</p>
 
       <div className="mx-auto mt-9 max-w-xl rounded-3xl border border-blue-100 bg-white p-6 shadow-card sm:p-8">
         <div className="flex flex-wrap items-center justify-center gap-4">
@@ -67,11 +74,7 @@ export function PricingCalculator() {
     <div className="grid gap-5 px-6 pb-10 sm:px-10 lg:grid-cols-3">
       {memberships.map((membership) => {
         const extraUsers = Math.max(0, users - 1);
-        const monthlyMinimum = membership.basePrice + (membership.userPriceMin ?? 0) * extraUsers;
-        const monthlyMaximum = membership.basePrice + (membership.userPriceMax ?? 0) * extraUsers;
-        const priceDisplay = monthlyMinimum === monthlyMaximum
-          ? `£${monthlyMinimum.toLocaleString("en-GB")}`
-          : `£${monthlyMinimum.toLocaleString("en-GB")}–£${monthlyMaximum.toLocaleString("en-GB")}`;
+        const monthlyPrice = membership.basePrice + (membership.additionalUserPrice ?? 0) * extraUsers;
 
         return <article key={membership.name} className={`relative flex flex-col overflow-hidden rounded-3xl border bg-white shadow-card ${membership.featured ? "border-electric ring-2 ring-electric/10" : "border-slate-200"}`}>
           <div className={`bg-gradient-to-br ${membership.accent} p-7 text-white`}>
@@ -81,17 +84,20 @@ export function PricingCalculator() {
           </div>
           <div className="flex flex-1 flex-col p-7">
             <div className="flex items-end gap-2">
-              <span className="text-4xl font-bold tracking-tight text-ink">{priceDisplay}</span>
+              <span className="text-4xl font-bold tracking-tight text-ink">£{money(monthlyPrice)}</span>
               <span className="pb-1.5 text-sm font-semibold text-slate-500">/ month</span>
             </div>
-            <p className="mt-2 text-xs font-semibold text-slate-500">
-              Base £{membership.basePrice}/month
-              {membership.userPriceMin ? ` + approximately £${membership.userPriceMin}–£${membership.userPriceMax} per additional user` : " · one-user workspace"}
-            </p>
+            <div className="mt-2 text-xs font-semibold text-slate-500">
+              <span>Base £{money(membership.basePrice)}/month</span>
+              {membership.additionalUserPrice ? <span>
+                {" "}+ {membership.userDiscount ? <><span className="line-through">£{money(membership.additionalUserListPrice!)}</span> <strong className="text-emerald-700">£{money(membership.additionalUserPrice)}</strong> per additional user</> : <>£{money(membership.additionalUserPrice)} per additional user</>}
+              </span> : <span> · one-user workspace</span>}
+            </div>
+            {membership.userDiscount && <span className="mt-3 w-fit rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">{membership.userDiscount}% additional-user discount</span>}
             <p className="mt-5 text-sm leading-6 text-slate-600">{membership.description}</p>
             <div className="mt-6 space-y-3 border-t border-slate-100 pt-5 text-sm text-slate-700">
               <p className="flex items-center gap-2"><Check className="text-emerald-500" size={17} /> {membership.invoices} included</p>
-              <p className="flex items-center gap-2"><Check className="text-emerald-500" size={17} /> {membership.userPriceMin ? `${users} user${users === 1 ? "" : "s"} selected` : "1 included user"}</p>
+              <p className="flex items-center gap-2"><Check className="text-emerald-500" size={17} /> {membership.additionalUserPrice ? `${users} user${users === 1 ? "" : "s"} selected` : "1 included user"}</p>
             </div>
             <Link href="/register" className="button-primary mt-7 w-full justify-center">Start free beta <ArrowRight className="ml-2" size={16} /></Link>
           </div>
@@ -108,13 +114,17 @@ export function PricingCalculator() {
         <p className="text-sm text-slate-600">Add capacity without changing membership.</p>
       </div>
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <article className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
+        <article className="relative rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
+          <span className="absolute right-5 top-5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">Save 10%</span>
           <p className="font-bold text-ink">Extra 250 invoices</p>
-          <p className="mt-3 text-3xl font-bold text-electric">Approximately £20–£30 <span className="text-sm font-semibold text-slate-500">/ month</span></p>
+          <p className="mt-4 text-sm font-semibold text-slate-400 line-through">£33.30 / month</p>
+          <p className="mt-1 text-3xl font-bold text-electric">£29.97 <span className="text-sm font-semibold text-slate-500">/ month</span></p>
         </article>
-        <article className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
+        <article className="relative rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
+          <span className="absolute right-5 top-5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">Save 15%</span>
           <p className="font-bold text-ink">Extra 1,000 invoices</p>
-          <p className="mt-3 text-3xl font-bold text-electric">Approximately £50–£75 <span className="text-sm font-semibold text-slate-500">/ month</span></p>
+          <p className="mt-4 text-sm font-semibold text-slate-400 line-through">£75.00 / month</p>
+          <p className="mt-1 text-3xl font-bold text-electric">£63.75 <span className="text-sm font-semibold text-slate-500">/ month</span></p>
         </article>
       </div>
       <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-5">
