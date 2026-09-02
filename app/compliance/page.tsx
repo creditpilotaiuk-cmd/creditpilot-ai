@@ -57,8 +57,8 @@ export default function CompliancePage() {
         <div className="mt-9 grid gap-5 sm:grid-cols-2">{controls.map(({ icon: Icon, title, copy, colour, surface }) => <article key={title} className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl">
           <div className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${colour}`} />
           <span className={`grid h-12 w-12 place-items-center rounded-2xl ${surface}`}><Icon size={23} /></span>
-          <h3 className="mt-5 text-xl font-bold text-ink">{title}</h3>
-          <p className="mt-3 text-sm leading-7 text-slate-600">{copy}</p>
+          <h3 className="mt-5 text-xl font-bold !text-[#07183f]">{title}</h3>
+          <p className="mt-3 text-sm leading-7 !text-[#334155]">{copy}</p>
           <div className="mt-5 flex items-center gap-2 text-xs font-bold text-emerald-700"><CheckCircle2 size={15} />Operational safeguard</div>
         </article>)}</div>
       </div>
@@ -86,9 +86,9 @@ export default function CompliancePage() {
         <div className="flex flex-wrap items-end justify-between gap-4"><div className="max-w-3xl"><p className="eyebrow">Current data map</p><h2 className="mt-3 text-3xl font-bold tracking-tight text-ink">What the workspace uses—and why.</h2><p className="mt-4 leading-7 text-slate-600">Each data category supports a defined workflow and has a corresponding operational control.</p></div><span className="rounded-full bg-blue-100 px-4 py-2 text-xs font-bold text-blue-700">Current founding beta</span></div>
         <div className="mt-9 grid gap-4">{dataMap.map(({ icon: Icon, data, purpose, control }) => <article key={data} className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md sm:grid-cols-[64px_.8fr_1fr_1.2fr] sm:items-center">
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-electric"><Icon size={22} /></span>
-          <div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Data category</p><h3 className="mt-1 font-bold text-ink">{data}</h3></div>
-          <div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Purpose</p><p className="mt-1 text-sm leading-6 text-slate-600">{purpose}</p></div>
-          <div className="rounded-2xl bg-emerald-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700">Control</p><p className="mt-1 text-sm leading-6 text-slate-700">{control}</p></div>
+          <div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Data category</p><h3 className="mt-1 font-bold !text-[#07183f]">{data}</h3></div>
+          <div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Purpose</p><p className="mt-1 text-sm leading-6 !text-[#334155]">{purpose}</p></div>
+          <div className="rounded-2xl bg-emerald-50 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700">Control</p><p className="mt-1 text-sm leading-6 !text-[#1e293b]">{control}</p></div>
         </article>)}</div>
       </div>
     </section>
@@ -121,9 +121,9 @@ function TrustSignal({ icon: Icon, value, label }: { icon: LucideIcon; value: st
 }
 
 function Responsibility({ icon: Icon, title, badge, children }: { icon: LucideIcon; title: string; badge: string; children: React.ReactNode }) {
-  return <article className="rounded-3xl border border-slate-200 bg-slate-50 p-6"><span className="grid h-11 w-11 place-items-center rounded-xl bg-white text-electric shadow-sm"><Icon size={21} /></span><span className="mt-5 inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">{badge}</span><h3 className="mt-3 text-xl font-bold text-ink">{title}</h3><p className="mt-3 text-sm leading-7 text-slate-600">{children}</p></article>;
+  return <article className="rounded-3xl border border-slate-200 bg-slate-50 p-6"><span className="grid h-11 w-11 place-items-center rounded-xl bg-white text-electric shadow-sm"><Icon size={21} /></span><span className="mt-5 inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">{badge}</span><h3 className="mt-3 text-xl font-bold !text-[#07183f]">{title}</h3><p className="mt-3 text-sm leading-7 !text-[#334155]">{children}</p></article>;
 }
 
 function Info({ icon: Icon, title, children }: { icon: LucideIcon; title: string; children: React.ReactNode }) {
-  return <article className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg"><span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-electric"><Icon size={19} /></span><h3 className="mt-4 font-bold text-ink">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{children}</p></article>;
+  return <article className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg"><span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-electric"><Icon size={19} /></span><h3 className="mt-4 font-bold !text-[#07183f]">{title}</h3><p className="mt-2 text-sm leading-6 !text-[#334155]">{children}</p></article>;
 }
