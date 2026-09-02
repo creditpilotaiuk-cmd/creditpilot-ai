@@ -89,82 +89,61 @@
 
 
 @layer components {
-  /* Layered CreditPilot homepage backgrounds */
+  /* Unified neutral CreditPilot homepage background */
   .homepage-canvas {
     overflow: hidden;
-    background: #f5f9ff;
+    background: #f5f6f8;
   }
 
   .homepage-canvas > section {
     position: relative;
     isolation: isolate;
-    border-color: rgba(96, 165, 250, 0.2);
+    border-color: rgba(148, 163, 184, 0.22);
+    background:
+      radial-gradient(circle at 90% 8%, rgba(148, 163, 184, 0.09), transparent 26rem),
+      radial-gradient(circle at 8% 92%, rgba(191, 219, 254, 0.12), transparent 28rem),
+      linear-gradient(135deg, #f8f9fb 0%, #f3f5f7 52%, #f7f8fa 100%);
   }
 
-  .homepage-canvas > section:nth-of-type(1) {
-    background:
-      radial-gradient(circle at 8% 18%, rgba(39, 100, 255, 0.2), transparent 26rem),
-      radial-gradient(circle at 92% 12%, rgba(56, 189, 248, 0.18), transparent 30rem),
-      linear-gradient(135deg, #eef5ff 0%, #ffffff 48%, #eaf3ff 100%);
-  }
-
-  .homepage-canvas > section:nth-of-type(2) {
-    background:
-      radial-gradient(circle at 4% 50%, rgba(59, 130, 246, 0.38), transparent 19rem),
-      radial-gradient(circle at 96% 15%, rgba(125, 211, 252, 0.2), transparent 22rem),
-      linear-gradient(110deg, #0b1738 0%, #102b68 52%, #2456a1 100%);
-  }
-
-  .homepage-canvas > section:nth-of-type(3) {
-    background:
-      radial-gradient(circle at 12% 22%, rgba(147, 197, 253, 0.34), transparent 24rem),
-      radial-gradient(circle at 88% 78%, rgba(34, 211, 238, 0.14), transparent 26rem),
-      linear-gradient(145deg, #f7fbff 0%, #e9f3ff 52%, #f5f9ff 100%);
-  }
-
-  .homepage-canvas > section:nth-of-type(4) {
-    background:
-      radial-gradient(circle at 92% 20%, rgba(96, 165, 250, 0.2), transparent 24rem),
-      linear-gradient(125deg, #ffffff 0%, #f1f7ff 55%, #e7f1ff 100%);
-    box-shadow: 0 0 0 100vmax #f1f7ff;
+  .homepage-canvas > section:nth-of-type(4),
+  .homepage-canvas > section:nth-of-type(7) {
+    box-shadow: 0 0 0 100vmax #f5f6f8;
     clip-path: inset(0 -100vmax);
   }
 
-  .homepage-canvas > section:nth-of-type(5) {
-    background:
-      radial-gradient(circle at 6% 72%, rgba(59, 130, 246, 0.16), transparent 25rem),
-      radial-gradient(circle at 96% 20%, rgba(125, 211, 252, 0.18), transparent 23rem),
-      linear-gradient(135deg, #edf5ff 0%, #ffffff 55%, #e9f3ff 100%);
+  .homepage-canvas > section:nth-of-type(2) p:first-child,
+  .homepage-canvas > section:nth-of-type(2) .text-white {
+    color: #0f1f3d;
+  }
+
+  .homepage-canvas > section:nth-of-type(2) p:last-child,
+  .homepage-canvas > section:nth-of-type(2) .text-blue-200 {
+    color: #64748b;
   }
 
   .homepage-canvas > section:nth-of-type(6) {
-    background:
-      radial-gradient(circle at 10% 15%, rgba(39, 100, 255, 0.34), transparent 25rem),
-      radial-gradient(circle at 90% 85%, rgba(56, 189, 248, 0.17), transparent 28rem),
-      linear-gradient(125deg, #07142f 0%, #10285f 54%, #173f88 100%);
+    color: #0f1f3d;
   }
 
-  .homepage-canvas > section:nth-of-type(7) {
-    background:
-      radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.24), transparent 28rem),
-      linear-gradient(180deg, #f7fbff 0%, #eaf3ff 100%);
-    box-shadow: 0 0 0 100vmax #eef6ff;
-    clip-path: inset(0 -100vmax);
+  .homepage-canvas > section:nth-of-type(6) .text-white {
+    color: #0f1f3d;
   }
 
-  .homepage-canvas > section:nth-of-type(8) {
-    background:
-      radial-gradient(circle at 8% 75%, rgba(39, 100, 255, 0.16), transparent 22rem),
-      radial-gradient(circle at 92% 25%, rgba(34, 211, 238, 0.13), transparent 24rem),
-      linear-gradient(135deg, #e7f1ff 0%, #f8fbff 52%, #deecff 100%);
+  .homepage-canvas > section:nth-of-type(6) .text-blue-100,
+  .homepage-canvas > section:nth-of-type(6) .text-blue-300 {
+    color: #52637a;
+  }
+
+  .homepage-canvas > section:nth-of-type(6) > div > div:last-child {
+    border-color: rgba(148, 163, 184, 0.3);
+    background: rgba(255, 255, 255, 0.68);
+    color: #52637a;
   }
 
   .homepage-canvas > section:nth-of-type(8) > div {
-    border: 1px solid rgba(96, 165, 250, 0.24);
-    background:
-      radial-gradient(circle at 95% 0%, rgba(56, 189, 248, 0.18), transparent 18rem),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(219, 234, 254, 0.9));
-    box-shadow: 0 24px 70px rgba(30, 64, 175, 0.14);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 22px 60px rgba(51, 65, 85, 0.1);
   }
 
   @media (prefers-reduced-motion: reduce) {
