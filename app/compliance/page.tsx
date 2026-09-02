@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BrainCircuit, Building2, CheckCircle2, Database, FileCheck2, Globe2, KeyRound, LockKeyhole, Scale, ShieldCheck, Sparkles, UserCheck, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, BrainCircuit, Building2, CheckCircle2, Database, FileCheck2, Globe2, LockKeyhole, Scale, ShieldCheck, UserCheck, Users, type LucideIcon } from "lucide-react";
 import { MarketingNav } from "@/components/marketing-nav";
 
 const controls = [
@@ -84,7 +84,7 @@ export default function CompliancePage() {
     <section id="data-map" className="scroll-mt-24 px-5 py-16 sm:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-wrap items-end justify-between gap-4"><div className="max-w-3xl"><p className="eyebrow">Current data map</p><h2 className="mt-3 text-3xl font-bold tracking-tight text-ink">What the workspace uses—and why.</h2><p className="mt-4 leading-7 text-slate-600">Each data category supports a defined workflow and has a corresponding operational control.</p></div><span className="rounded-full bg-blue-100 px-4 py-2 text-xs font-bold text-blue-700">Current founding beta</span></div>
-        <div className="mt-9 grid gap-4">{dataMap.map(({ icon: Icon, data, purpose, control }, index) => <article key={data} className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md sm:grid-cols-[64px_.8fr_1fr_1.2fr] sm:items-center">
+        <div className="mt-9 grid gap-4">{dataMap.map(({ icon: Icon, data, purpose, control }) => <article key={data} className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md sm:grid-cols-[64px_.8fr_1fr_1.2fr] sm:items-center">
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-electric"><Icon size={22} /></span>
           <div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Data category</p><h3 className="mt-1 font-bold text-ink">{data}</h3></div>
           <div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Purpose</p><p className="mt-1 text-sm leading-6 text-slate-600">{purpose}</p></div>
