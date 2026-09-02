@@ -45,14 +45,12 @@ export default async function CommunicationsPage() {
               <h2 className="mt-4 max-w-2xl text-2xl font-bold tracking-tight sm:text-3xl">Every collection decision, in one clear timeline.</h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-blue-100">Open a customer record to review reminders, promises, payments, disputes, ownership decisions and logged calls in chronological order.</p>
               <div className="mt-5 flex flex-wrap gap-2">
-                {[
-                  [Mail, "Chases"],
-                  [Clock3, "Promises"],
-                  [CircleDollarSign, "Payments"],
-                  [Scale, "Disputes"],
-                  [PhoneCall, "Calls"],
-                  [ShieldCheck, "Decisions"],
-                ].map(([Icon, label]) => <span key={label as string} className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-50"><Icon size={13} />{label as string}</span>)}
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-50"><Mail size={13} />Chases</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-50"><Clock3 size={13} />Promises</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-50"><CircleDollarSign size={13} />Payments</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-50"><Scale size={13} />Disputes</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-50"><PhoneCall size={13} />Calls</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-50"><ShieldCheck size={13} />Decisions</span>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3 lg:grid-cols-1">
