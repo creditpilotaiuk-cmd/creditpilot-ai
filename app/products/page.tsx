@@ -108,7 +108,7 @@ export default function ProductsPage() {
             <div className="mt-5 flex items-end gap-2"><span className="text-4xl font-bold text-ink">{plan.price}</span><span className="pb-1 text-sm font-semibold text-slate-500">/ month</span></div>
             <p className="mt-4 text-sm leading-6 text-slate-600">{plan.description}</p>
             <p className="mt-5 w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-bold text-blue-800">{plan.limit}</p>
-            <Link href={`#${plan.id}`} className="mt-7 inline-flex items-center text-sm font-bold text-electric">Show all information <ArrowRight className="ml-2" size={16} /></Link>
+            <a href={`#${plan.id}`} className="mt-7 inline-flex items-center text-sm font-bold text-electric">Show all information <ArrowRight className="ml-2" size={16} /></a>
           </article>)}
         </div>
       </div>
