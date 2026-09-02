@@ -133,8 +133,9 @@ export default function ProductsPage() {
           <p className="mt-4 leading-7 text-slate-600">Every level keeps your team in control of customer communication. Growth adds intelligent recommendations; Professional adds deeper evidence and oversight.</p>
         </div>
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {plans.map(plan => <article key={plan.id} className={`relative flex flex-col rounded-3xl border bg-white p-7 shadow-card ${plan.featured ? "border-electric ring-2 ring-electric/10" : "border-slate-200"}`}>
-            {plan.featured && <span className="absolute right-5 top-5 rounded-full bg-electric px-3 py-1.5 text-xs font-bold text-white">Most popular</span>}
+          {plans.map(plan => <article key={plan.id} className={`relative flex flex-col overflow-hidden rounded-3xl border p-7 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${plan.name === "Starter" ? "border-cyan-200 bg-gradient-to-br from-white via-cyan-50/80 to-blue-100/70" : plan.featured ? "border-electric bg-gradient-to-br from-white via-blue-50 to-violet-100/80 ring-2 ring-electric/10" : "border-violet-200 bg-gradient-to-br from-white via-indigo-50/80 to-violet-100/70"}`}>
+            {plan.featured && <span className="absolute right-5 top-5 z-10 rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-3 py-1.5 text-xs font-bold text-white shadow-md">Most popular</span>}
+            <span aria-hidden="true" className={`absolute -right-12 -top-12 h-32 w-32 rounded-full blur-2xl ${plan.name === "Starter" ? "bg-cyan-300/25" : plan.featured ? "bg-violet-400/30" : "bg-indigo-300/25"}`} />
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-electric">{plan.strapline}</p>
             <h3 className="mt-3 text-3xl font-bold text-ink">{plan.name}</h3>
             <div className="mt-5 flex items-end gap-2"><span className="text-4xl font-bold text-ink">{plan.price}</span><span className="pb-1 text-sm font-semibold text-slate-500">/ month</span></div>
