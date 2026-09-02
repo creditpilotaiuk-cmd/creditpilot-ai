@@ -45,7 +45,8 @@ function money(value: number) {
 export function PricingCalculator() {
   const [users, setUsers] = useState(1);
 
-  return <div className="space-y-12">\n    <div className="overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-b from-white via-blue-50/60 to-slate-100 shadow-[0_30px_80px_rgba(30,64,175,0.14)]">
+  return <div className="space-y-12">
+    <div className="overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-b from-white via-blue-50/60 to-slate-100 shadow-[0_30px_80px_rgba(30,64,175,0.14)]">
     <div className="px-6 pb-10 pt-10 text-center sm:px-10">
       <p className="text-xs font-bold uppercase tracking-[0.2em] text-electric">Team pricing calculator</p>
       <h2 className="mx-auto mt-3 max-w-3xl text-3xl font-bold tracking-tight text-ink sm:text-4xl">See your monthly membership price.</h2>
