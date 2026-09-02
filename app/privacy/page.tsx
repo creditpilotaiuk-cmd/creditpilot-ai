@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Bot, Building2, CheckCircle2, Clock3, Cookie, Database, Download, FileKey2, Globe2, KeyRound, LockKeyhole, Scale, ShieldCheck, UserCheck, Users, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRight, Bot, Building2, Clock3, Database, Download, FileKey2, Globe2, KeyRound, LockKeyhole, Scale, ShieldCheck, UserCheck, type LucideIcon } from "lucide-react";
 import { MarketingNav } from "@/components/marketing-nav";
 
 const sections = [
