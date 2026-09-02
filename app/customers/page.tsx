@@ -7,6 +7,7 @@ import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { createCustomer, refreshExternalRisk, updateCreditLimit, updateDunningControl } from "./actions";
 
 export const dynamic = "force-dynamic";
+// Professional accounts open the complete customer-control workspace by default.
 function money(value: number) { return value.toLocaleString("en-GB", { style: "currency", currency: "GBP" }); }
 
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
