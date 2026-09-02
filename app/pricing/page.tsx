@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, CreditCard, Layers3, Sparkles, Star, Zap } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -98,77 +100,112 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
   if (!user) redirect("/login");
   const params = await searchParams;
   return (
-    <main className="flex min-h-screen"><DashboardSidebar /><div className="min-w-0 flex-1">
-      <header className="border-b bg-white px-5 py-4 sm:px-8"><p className="text-sm text-slate-500">Account and billing</p><h1 className="text-xl font-bold text-ink">Membership</h1></header>
-      <div className="mx-auto max-w-7xl p-5 sm:p-8">
-        {params.success && <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-sm font-semibold text-emerald-700">Checkout complete. Your account will update once payment is confirmed.</p>}
-        <section className="mt-6 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-7 shadow-card sm:p-9"><p className="eyebrow">Founding beta · £0</p><h2 className="mt-3 text-3xl font-bold text-ink">Every current feature, free throughout the beta</h2><p className="mt-4 max-w-3xl leading-7 text-slate-600">There is no subscription charge, card, contract or automatic paid conversion. We will give you advance notice before billing begins, and you must actively select a membership to continue.</p><div className="mt-6 rounded-xl border border-violet-100 bg-white p-5"><p className="text-sm font-bold text-violet-700">Founding-customer benefit</p><p className="mt-2 text-sm leading-6 text-slate-600">Choose Starter or Growth after the beta and receive the next membership level&apos;s features for your first six months while paying your chosen plan&apos;s price. After six months, access automatically returns to the selected plan unless you actively choose to upgrade. Professional customers remain on Professional.</p></div></section>
-        <section className="mt-10">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className="max-w-3xl">
-              <p className="eyebrow">After the beta</p>
-              <h2 className="mt-2 text-2xl font-bold text-ink">Choose the control your business needs</h2>
-              <p className="mt-3 leading-7 text-slate-600">Three clear memberships, with room to add capacity as your debtor book grows.</p>
-            </div>
-            <p className="rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-slate-600">Planned prices · VAT position to be confirmed</p>
-          </div>
+    <main className="flex min-h-screen">
+      <DashboardSidebar />
+      <div className="min-w-0 flex-1">
+        <header className="border-b bg-white px-5 py-4 sm:px-8">
+          <p className="text-sm text-slate-500">Account and billing</p>
+          <h1 className="text-xl font-bold text-ink">Membership</h1>
+        </header>
 
-          <div className="mt-6 grid gap-5 xl:grid-cols-3">
-            {plans.map(plan => (
-              <article key={plan.name} className={`relative flex flex-col overflow-hidden rounded-3xl border bg-white p-6 shadow-card transition-transform hover:-translate-y-1 ${plan.featured ? "border-electric ring-2 ring-electric/10" : "border-slate-200"}`}>
-                {plan.featured && <div className="absolute right-0 top-0 rounded-bl-2xl bg-electric px-4 py-2 text-xs font-bold text-white">Most popular</div>}
-                <div className={`mb-5 h-1.5 w-14 rounded-full ${plan.featured ? "bg-electric" : "bg-slate-300"}`} />
-                <h3 className="text-2xl font-bold text-ink">{plan.name}</h3>
-                <p className="mt-1 text-sm font-semibold text-electric">{plan.strapline}</p>
-                <div className="mt-5 flex items-end gap-2">
-                  <p className="text-4xl font-bold text-ink">{plan.price}</p>
-                  <span className="pb-1 text-sm font-medium text-slate-500">/ month</span>
-                </div>
-                <p className="mt-4 text-sm leading-6 text-slate-600">{plan.description}</p>
-                <p className="mt-5 inline-flex w-fit rounded-full bg-sky px-4 py-2 text-sm font-bold text-ink">{plan.limit}</p>
-                <div className="my-5 border-t border-slate-100" />
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Key benefits</p>
-                <ul className="mt-4 flex-1 space-y-3 text-sm leading-5 text-slate-700">
-                  {plan.features.map(feature => <li key={feature} className="flex gap-2.5"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-600">✓</span><span>{feature}</span></li>)}
-                </ul>
-                <div className="mt-7 rounded-xl border border-blue-100 bg-blue-50/70 p-4">
-                  <p className="text-xs font-bold uppercase tracking-wider text-electric">Best suited to</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">{plan.bestFor}</p>
-                </div>
-                <button type="button" disabled className={`mt-7 w-full cursor-not-allowed rounded-xl px-4 py-3 text-sm font-bold ${plan.featured ? "bg-electric text-white opacity-70" : "border border-slate-200 bg-slate-50 text-slate-500"}`}>Available after beta</button>
-              </article>
-            ))}
-          </div>
-        </section>
+        <div className="mx-auto max-w-7xl p-5 sm:p-8">
+          {params.success && <div className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700"><CheckCircle2 size={19} />Checkout complete. Your account will update once payment is confirmed.</div>}
 
-        <section className="mt-12">
-          <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-blue-800 p-6 text-white shadow-card sm:p-8">
-            <div className="max-w-3xl">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">Premium add-ons</p>
-              <h2 className="mt-2 text-2xl font-bold">Add capacity without changing your plan</h2>
-              <p className="mt-3 text-sm leading-6 text-blue-100">Choose only what your business needs. Monthly add-ons can grow with you, while onboarding support is charged once.</p>
+          <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#07183f] via-[#123d91] to-[#2867f0] p-6 text-white shadow-xl shadow-blue-900/15 sm:p-10">
+            <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-cyan-300/20 blur-2xl" />
+            <div className="relative grid gap-8 lg:grid-cols-[1.25fr_.75fr] lg:items-center">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-100"><Sparkles size={14} />Founding beta · £0</span>
+                <h2 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">Every current feature, free throughout the beta.</h2>
+                <p className="mt-4 max-w-2xl leading-7 text-blue-100">No subscription charge, payment card, contract or automatic paid conversion. We will give you advance notice before billing begins, and you will actively choose whether to continue.</p>
+                <div className="mt-6 flex flex-wrap gap-2 text-xs font-bold">
+                  <span className="rounded-full bg-white/10 px-3 py-2">No card required</span>
+                  <span className="rounded-full bg-white/10 px-3 py-2">No contract</span>
+                  <span className="rounded-full bg-white/10 px-3 py-2">No automatic conversion</span>
+                </div>
+              </div>
+              <div className="rounded-3xl border border-white/15 bg-white/10 p-6 backdrop-blur-sm">
+                <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-xl bg-violet-400/20 text-violet-200"><Star size={21} /></span><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-violet-200">Founding-customer benefit</p><p className="mt-1 font-bold">Six-month feature upgrade</p></div></div>
+                <p className="mt-4 text-sm leading-6 text-blue-100">Choose Starter or Growth after beta and receive the next membership level’s features for your first six months while paying your chosen plan’s price. Professional remains Professional.</p>
+              </div>
             </div>
-            <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {premiumAddOns.map(addOn => (
-                <article key={addOn.name} className={`rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur ${addOn.wide ? "sm:col-span-2 xl:col-span-4" : ""}`}>
-                  <div className={addOn.wide ? "sm:flex sm:items-center sm:justify-between sm:gap-8" : ""}>
-                    <div>
-                      <p className="text-sm font-bold text-white">{addOn.name}</p>
-                      <p className="mt-3 text-3xl font-bold">{addOn.price}<span className="ml-2 text-xs font-semibold text-blue-200">{addOn.term}</span></p>
-                    </div>
-                    <p className={`mt-3 text-sm leading-6 text-blue-100 ${addOn.wide ? "sm:mt-0 sm:max-w-2xl" : ""}`}>{addOn.description}</p>
+          </section>
+
+          <nav aria-label="Membership sections" className="sticky top-0 z-20 mt-6 rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-bold text-slate-600">
+              <a href="#plans" className="hover:text-electric">Compare plans</a>
+              <a href="#starter" className="hover:text-electric">Starter</a>
+              <a href="#growth" className="hover:text-electric">Growth</a>
+              <a href="#professional" className="hover:text-electric">Professional</a>
+              <a href="#add-ons" className="hover:text-electric">Add-ons</a>
+            </div>
+          </nav>
+
+          <section id="plans" className="scroll-mt-24 py-14">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="max-w-3xl"><p className="eyebrow">After the beta</p><h2 className="mt-2 text-3xl font-bold tracking-tight text-ink">Choose the control your business needs.</h2><p className="mt-3 leading-7 text-slate-600">Every membership supports a controlled collection workflow. Growth adds intelligent recommendations; Professional adds deeper evidence and oversight.</p></div>
+              <p className="w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-slate-600">Planned prices · VAT position to be confirmed</p>
+            </div>
+
+            <div className="mt-9 grid gap-6 lg:grid-cols-3">
+              {plans.map(plan => {
+                const id = plan.name.toLowerCase();
+                const highlights = plan.features.filter(feature => !feature.startsWith("Everything")).slice(0, 5);
+                return <article key={plan.name} className={`group relative flex flex-col overflow-hidden rounded-3xl border bg-white p-7 shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl ${plan.featured ? "border-electric ring-2 ring-electric/10" : "border-slate-200"}`}>
+                  {plan.featured && <span className="absolute right-5 top-5 rounded-full bg-electric px-3 py-1.5 text-xs font-bold text-white">Most popular</span>}
+                  <span className={`grid h-12 w-12 place-items-center rounded-2xl ${plan.featured ? "bg-blue-600 text-white" : "bg-blue-50 text-electric"}`}>{plan.featured ? <Sparkles size={22} /> : <Layers3 size={22} />}</span>
+                  <p className="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-electric">{plan.strapline}</p>
+                  <h3 className="mt-2 text-3xl font-bold text-ink">{plan.name}</h3>
+                  <div className="mt-5 flex items-end gap-2"><span className="text-4xl font-bold text-ink">{plan.price}</span><span className="pb-1 text-sm font-semibold text-slate-500">/ month</span></div>
+                  <p className="mt-4 text-sm leading-6 text-slate-600">{plan.description}</p>
+                  <p className="mt-5 w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-bold text-blue-800">Up to {plan.limit}</p>
+                  <div className="mt-6 flex-1 space-y-3">{highlights.map(feature => <div key={feature} className="flex gap-2.5 text-sm text-slate-700"><CheckCircle2 className="mt-0.5 shrink-0 text-emerald-500" size={17} /><span>{feature}</span></div>)}</div>
+                  <a href={`#${id}`} className={`mt-7 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition ${plan.featured ? "bg-electric text-white hover:bg-blue-700" : "border border-blue-200 bg-blue-50 text-electric hover:bg-blue-100"}`}>Show all information <ArrowRight className="ml-2" size={16} /></a>
+                </article>;
+              })}
+            </div>
+          </section>
+
+          <section className="space-y-8 border-t border-slate-200 py-14">
+            {plans.map((plan, index) => {
+              const id = plan.name.toLowerCase();
+              return <article id={id} key={plan.name} className="scroll-mt-24 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50">
+                <div className="grid lg:grid-cols-[.72fr_1.28fr]">
+                  <div className={`p-7 sm:p-9 ${plan.featured ? "bg-gradient-to-br from-[#10285f] to-[#2764ff] text-white" : "bg-gradient-to-br from-slate-100 to-blue-50 text-ink"}`}>
+                    <span className={`grid h-12 w-12 place-items-center rounded-xl ${plan.featured ? "bg-white/15 text-white" : "bg-white text-electric shadow-sm"}`}>{index === 1 ? <Sparkles size={23} /> : <Layers3 size={23} />}</span>
+                    <p className={`mt-7 text-xs font-bold uppercase tracking-[0.16em] ${plan.featured ? "text-blue-200" : "text-electric"}`}>{plan.strapline}</p>
+                    <h2 className="mt-3 text-3xl font-bold">{plan.name}</h2>
+                    <p className={`mt-4 leading-7 ${plan.featured ? "text-blue-100" : "text-slate-600"}`}>{plan.description}</p>
+                    <p className="mt-7 text-4xl font-bold">{plan.price}<span className={`ml-2 text-sm ${plan.featured ? "text-blue-200" : "text-slate-500"}`}>/ month</span></p>
+                    <p className={`mt-3 text-sm font-bold ${plan.featured ? "text-white" : "text-ink"}`}>Up to {plan.limit}</p>
+                    {plan.featured && <span className="mt-5 inline-flex rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold text-white">Recommended for established SMEs</span>}
                   </div>
-                </article>
-              ))}
+
+                  <div className="p-7 sm:p-9">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Everything included</p>
+                    <div className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">{plan.features.map(feature => <div key={feature} className="flex gap-3"><CheckCircle2 className="mt-0.5 shrink-0 text-emerald-500" size={18} /><p className="text-sm leading-6 text-slate-700">{feature}</p></div>)}</div>
+                    <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50/70 p-5"><p className="text-xs font-bold uppercase tracking-[0.14em] text-electric">Best suited to</p><p className="mt-2 text-sm leading-6 text-slate-700">{plan.bestFor}</p></div>
+                    <div className="mt-7 flex flex-wrap items-center gap-3"><button type="button" disabled className={`cursor-not-allowed rounded-xl px-5 py-3 text-sm font-bold opacity-70 ${plan.featured ? "bg-electric text-white" : "border border-slate-200 bg-slate-50 text-slate-500"}`}>Available after beta</button><a href="#plans" className="text-sm font-bold text-electric">Back to comparison</a></div>
+                  </div>
+                </div>
+              </article>;
+            })}
+          </section>
+
+          <section id="add-ons" className="scroll-mt-24 py-14">
+            <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-blue-800 p-6 text-white shadow-xl sm:p-9">
+              <div className="flex flex-wrap items-end justify-between gap-5"><div className="max-w-3xl"><p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">Premium add-ons</p><h2 className="mt-2 text-3xl font-bold">Add capacity without changing membership.</h2><p className="mt-3 text-sm leading-6 text-blue-100">Increase invoice capacity or user access only when your business needs it.</p></div><span className="inline-flex items-center rounded-full bg-white/10 px-4 py-2 text-xs font-bold text-blue-100"><Zap className="mr-2 text-cyan-300" size={15} />Flexible monthly capacity</span></div>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{premiumAddOns.map(addOn => <article key={addOn.name} className="group rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur transition hover:-translate-y-1 hover:bg-white/15"><CreditCard className="text-cyan-300" size={21} /><p className="mt-4 text-sm font-bold text-white">{addOn.name}</p><p className="mt-3 text-3xl font-bold">{addOn.price}<span className="ml-2 text-xs font-semibold text-blue-200">{addOn.term}</span></p><p className="mt-3 text-sm leading-6 text-blue-100">{addOn.description}</p></article>)}</div>
+              <div className="mt-5 rounded-2xl border border-amber-200/30 bg-amber-100/10 px-5 py-4"><p className="text-sm font-bold text-amber-100">Company-risk checks</p><p className="mt-1 text-xs leading-5 text-blue-100">Creditsafe pricing will be added after supplier costs, API access and data rights are confirmed. It will not be advertised as unlimited.</p></div>
             </div>
-            <div className="mt-5 rounded-2xl border border-amber-200/30 bg-amber-100/10 px-5 py-4">
-              <p className="text-sm font-bold text-amber-100">Company-risk checks</p>
-              <p className="mt-1 text-xs leading-5 text-blue-100">Creditsafe pricing will be added only after supplier costs, API access and data rights are confirmed. It will not be advertised as unlimited.</p>
-            </div>
-          </div>
-        </section>
-        <section className="mt-8 rounded-xl border border-rose-100 bg-rose-50 p-6"><h3 className="font-bold text-ink">Need to cancel?</h3><p className="mt-2 max-w-2xl text-sm text-slate-600">Your data is not deleted immediately. Submit a request and we&apos;ll confirm the cancellation.</p><form action={requestCancellation} className="mt-4"><button className="rounded-lg border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-700" type="submit">Request cancellation</button></form></section>
+          </section>
+
+          <section className="mb-8 flex flex-wrap items-center justify-between gap-5 rounded-3xl border border-rose-200 bg-gradient-to-r from-rose-50 to-white p-6">
+            <div><h3 className="font-bold text-ink">Need to cancel?</h3><p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">Your data is not deleted immediately. Submit a request and we will confirm the cancellation.</p></div>
+            <form action={requestCancellation}><button className="rounded-xl border border-rose-300 bg-white px-4 py-2.5 text-sm font-bold text-rose-700 transition hover:bg-rose-100" type="submit">Request cancellation</button></form>
+          </section>
+        </div>
       </div>
-    </div></main>
+    </main>
   );
 }
