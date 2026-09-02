@@ -10,52 +10,52 @@ const plans = [
   {
     name: "Starter",
     price: "£49",
-    strapline: "Essential credit control",
-    description: "For small businesses building a reliable, organised collection process.",
+    strapline: "Essential credit control for small businesses",
+    description: "Designed for small businesses that need a consistent and organised collection process.",
     limit: "150 active invoices",
+    bestFor: "Small businesses establishing a reliable and consistent credit-control process.",
     features: [
-      "Prioritised chase list and Priority Score",
-      "Customer and invoice management with CSV import",
-      "Three-stage editable reminders with human approval",
-      "Statements, payment promises and missed-promise identification",
-      "Basic disputes, chase holds and collection timeline",
-      "Invoice ageing, audit trail and workspace export",
-      "Legal-protection checklist and core email support",
+      "Up to 150 active invoices", "Credit-control overview dashboard", "Today’s prioritised chase list", "Explainable CreditPilot Priority Score",
+      "Customer management", "Invoice management", "CSV invoice import", "Three-stage reminder workflow", "Editable reminder drafts",
+      "Human approval before reminders are sent", "Customer statements", "Record invoices as paid", "Record payment promises",
+      "Identify missed payment promises", "Basic dispute and chase-hold controls", "Customer collection timeline", "Basic invoice audit trail",
+      "Legal-protection confirmation checklist", "Invoice-ageing overview", "Bank-transfer payment instructions", "Workspace data export", "Core email support",
     ],
   },
   {
     name: "Growth",
     price: "£129",
-    strapline: "Intelligent credit control",
-    description: "For established SMEs managing a busier debtor book and more detailed follow-up.",
+    strapline: "Intelligent credit control for growing businesses",
+    description: "Designed for established SMEs managing a larger debtor book and more complex collection cases.",
     limit: "750 active invoices",
+    bestFor: "Growing businesses with regular credit-control activity, a busier debtor book and customers requiring more detailed follow-up.",
     featured: true,
     features: [
-      "Everything in Starter",
-      "Copilot action plans and workspace questions",
-      "AI-assisted reply analysis and suggested wording",
-      "Smart timing, next actions and behaviour recommendations",
-      "Broken-promise monitoring and alerts",
-      "Advanced disputes, chase holds and case ownership",
-      "Complete customer timeline and enhanced analytics",
-      "Suggested credit limits and risk-check readiness",
+      "Everything included in Starter", "Up to 750 active invoices", "Copilot action plans",
+      "Ask Copilot questions about invoices, customers, payments and reminders", "AI-assisted customer-reply analysis",
+      "Suggested customer-response wording", "Smart reminder timing based on recorded payment patterns",
+      "Customer payment-behaviour recommendations", "Suggested customer credit limits", "Broken-promise monitoring and alerts",
+      "Recommended follow-up actions", "Advanced dispute controls", "Pause chase communications with a recorded reason",
+      "Case ownership and workflow controls", "Complete customer collection timeline", "Enhanced collection analytics",
+      "Promise-kept rate", "Payment-rate reporting", "Largest outstanding balance reporting",
+      "External company-risk checks through Creditsafe once configured",
     ],
   },
   {
     name: "Professional",
     price: "£249",
-    strapline: "Complete oversight and evidence",
-    description: "For finance teams needing deeper history, evidence and escalation support.",
+    strapline: "Complete oversight and evidence for larger teams",
+    description: "Designed for larger finance teams requiring deeper collection history, audit evidence and escalation support.",
     limit: "2,500 active invoices",
+    bestFor: "Larger finance teams, credit-control departments and businesses requiring documented evidence before escalation.",
     features: [
-      "Everything in Growth",
-      "Complete invoice and customer collection histories",
-      "Detailed reminder, promise, dispute and hold history",
-      "Decision history and complete audit trail",
-      "Approval, sending and email-delivery evidence",
-      "Legal-protection status and escalation evidence",
-      "Downloadable collection and evidence packs",
-      "Premium insights and higher-volume analytics",
+      "Everything included in Growth", "Up to 2,500 active invoices", "Complete invoice collection history",
+      "Complete customer collection history", "Detailed reminder history", "Payment-promise and broken-promise history",
+      "Dispute and chase-hold history", "Case-ownership decision history", "Complete invoice audit trail",
+      "Communication approval and sending records", "Email-delivery evidence", "Legal-protection status",
+      "Downloadable customer collection packs", "Evidence-pack exports", "Deeper escalation evidence",
+      "Premium customer-risk insights", "Premium payment-behaviour insights", "Higher-volume collection analytics",
+      "Higher-volume collection management",
     ],
   },
 ];
@@ -131,6 +131,10 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
                 <ul className="mt-4 flex-1 space-y-3 text-sm leading-5 text-slate-700">
                   {plan.features.map(feature => <li key={feature} className="flex gap-2.5"><span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-600">✓</span><span>{feature}</span></li>)}
                 </ul>
+                <div className="mt-7 rounded-xl border border-blue-100 bg-blue-50/70 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-electric">Best suited to</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">{plan.bestFor}</p>
+                </div>
                 <button type="button" disabled className={`mt-7 w-full cursor-not-allowed rounded-xl px-4 py-3 text-sm font-bold ${plan.featured ? "bg-electric text-white opacity-70" : "border border-slate-200 bg-slate-50 text-slate-500"}`}>Available after beta</button>
               </article>
             ))}
