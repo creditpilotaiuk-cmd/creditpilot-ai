@@ -108,24 +108,24 @@ export function PricingCalculator() {
 
     </div>
 
-    <section className="relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#071535] via-[#123a78] to-[#2764ff] px-6 py-10 text-white shadow-[0_30px_80px_rgba(16,40,95,0.28)] sm:px-10 sm:py-12">
-      <div aria-hidden="true" className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-cyan-300/20 blur-3xl" />
-      <div aria-hidden="true" className="absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-blue-300/15 blur-3xl" />
+    <section className="relative isolate overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-br from-white via-blue-50/70 to-indigo-100/70 px-6 py-9 text-ink shadow-[0_24px_60px_rgba(30,64,175,0.12)] sm:px-10 sm:py-11">
+      <div aria-hidden="true" className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-cyan-300/25 blur-3xl" />
+      <div aria-hidden="true" className="absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-violet-300/20 blur-3xl" />
 
-      <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+      <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div className="max-w-2xl">
-          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-white/15 text-cyan-200 shadow-inner ring-1 ring-white/20"><Files size={27} /></span>
-          <p className="mt-6 text-xs font-bold uppercase tracking-[0.2em] text-cyan-200">Invoice capacity add-ons</p>
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-cyan-100 to-blue-100 text-electric ring-1 ring-blue-200"><Files size={27} /></span>
+          <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-electric">Invoice capacity add-ons</p>
           <h3 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">More room for a growing debtor book.</h3>
-          <p className="mt-3 max-w-xl leading-7 text-blue-100">Increase your active invoice capacity without moving immediately to another membership.</p>
+          <p className="mt-3 max-w-xl leading-7 text-slate-600">Increase your active invoice capacity without moving immediately to another membership.</p>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-blue-50 backdrop-blur">
-          <Sparkles size={16} className="text-cyan-200" /> Flexible monthly capacity
+        <div className="flex items-center gap-2 rounded-full border border-blue-200 bg-white/70 px-4 py-2 text-sm font-semibold text-blue-700 backdrop-blur">
+          <Sparkles size={16} className="text-electric" /> Flexible monthly capacity
         </div>
       </div>
 
       <div className="relative mt-9 grid gap-5 sm:grid-cols-2">
-        <article className="group relative overflow-hidden rounded-3xl border border-white/20 bg-white p-7 text-ink shadow-xl transition duration-300 hover:-translate-y-2 hover:shadow-[0_24px_55px_rgba(0,0,0,0.28)]">
+        <article className="group relative overflow-hidden rounded-3xl border border-cyan-200 bg-gradient-to-br from-white via-cyan-50 to-blue-100 p-7 text-ink shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-xl">
           <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-cyan-400 to-blue-500" />
           <span className="absolute right-6 top-6 rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-800">Save 10%</span>
           <span className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 font-bold text-electric transition group-hover:scale-110">+250</span>
@@ -135,7 +135,7 @@ export function PricingCalculator() {
           <p className="mt-4 text-sm leading-6 text-slate-600">A flexible capacity boost for a steadily growing invoice book.</p>
         </article>
 
-        <article className="group relative overflow-hidden rounded-3xl border border-white/20 bg-white p-7 text-ink shadow-xl transition duration-300 hover:-translate-y-2 hover:shadow-[0_24px_55px_rgba(0,0,0,0.28)]">
+        <article className="group relative overflow-hidden rounded-3xl border border-violet-200 bg-gradient-to-br from-white via-indigo-50 to-violet-100 p-7 text-ink shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-xl">
           <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-violet-400 to-blue-500" />
           <span className="absolute right-6 top-6 rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-800">Save 15%</span>
           <span className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-50 font-bold text-indigo-700 transition group-hover:scale-110">+1K</span>
@@ -146,12 +146,12 @@ export function PricingCalculator() {
         </article>
       </div>
 
-      <div className="relative mt-6 flex flex-col gap-3 rounded-2xl border border-amber-200/30 bg-amber-50/10 p-5 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative mt-5 flex flex-col gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-white p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-bold text-amber-100">Company-risk checks</p>
-          <p className="mt-1 text-sm leading-6 text-blue-100">Pricing will be published after supplier costs, API access and data rights are confirmed.</p>
+          <p className="font-bold text-amber-800">Company-risk checks</p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">Pricing will be published after supplier costs, API access and data rights are confirmed.</p>
         </div>
-        <span className="w-fit rounded-full bg-amber-100/15 px-3 py-1 text-xs font-bold text-amber-100">Coming after supplier confirmation</span>
+        <span className="w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">Coming after supplier confirmation</span>
       </div>
     </section>
   </div>;
