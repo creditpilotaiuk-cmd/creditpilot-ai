@@ -214,6 +214,54 @@
     box-shadow: 0 14px 35px rgba(51, 65, 85, 0.1);
   }
 
+  .feature-flip-visual {
+    position: relative;
+    display: grid;
+    width: 5.25rem;
+    height: 5.25rem;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 1.5rem;
+    color: white;
+    box-shadow:
+      0 14px 28px rgba(30, 64, 175, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .feature-flip-visual svg {
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 3px 5px rgba(15, 23, 42, 0.18));
+  }
+
+  .feature-flip-visual-glow {
+    position: absolute;
+    top: -1.5rem;
+    right: -1.5rem;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.3);
+    filter: blur(4px);
+  }
+
+  .feature-flip-card:nth-child(1) .feature-flip-visual {
+    background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+  }
+
+  .feature-flip-card:nth-child(2) .feature-flip-visual {
+    background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
+  }
+
+  .feature-flip-card:nth-child(3) .feature-flip-visual {
+    background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  }
+
+  .feature-flip-card:nth-child(4) .feature-flip-visual {
+    background: linear-gradient(135deg, #059669 0%, #14b8a6 100%);
+  }
+
   .feature-flip-front {
     background:
       radial-gradient(circle at 88% 10%, rgba(191, 219, 254, 0.3), transparent 12rem),
