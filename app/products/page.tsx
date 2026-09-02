@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Layers3, Sparkles } from "lucide-react";
 import { MarketingNav } from "@/components/marketing-nav";
+import { PricingCalculator } from "@/components/pricing-calculator";
 
 const plans = [
   {
@@ -100,13 +101,6 @@ const plans = [
   },
 ];
 
-const addOns = [
-  { name: "Extra 250 invoices", price: "£25", term: "/ month", description: "Add capacity without moving to the next membership." },
-  { name: "Extra 1,000 invoices", price: "£65", term: "/ month", description: "A larger capacity increase for an expanding debtor book." },
-  { name: "Additional Growth user", price: "£12", term: "/ user / month", description: "Give another team member access to your Growth workspace." },
-  { name: "Additional Professional user", price: "£18", term: "/ user / month", description: "Add a user to a Professional workspace." },
-];
-
 export default function ProductsPage() {
   return <main className="min-h-screen bg-[#f5f6f8] text-slate-800">
     <MarketingNav />
@@ -184,24 +178,8 @@ export default function ProductsPage() {
     </section>
 
     <section id="add-ons" className="scroll-mt-24 px-6 py-20 lg:px-8">
-      <div className="mx-auto max-w-7xl rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-blue-800 p-7 text-white shadow-xl sm:p-10">
-        <div className="max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">Premium add-ons</p>
-          <h2 className="mt-3 text-3xl font-bold">Add capacity without changing your membership.</h2>
-          <p className="mt-4 leading-7 text-blue-100">Choose only the additional invoice capacity or user access your business needs.</p>
-        </div>
-        <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {addOns.map(addOn => <article key={addOn.name} className="rounded-2xl border border-white/15 bg-white/10 p-6 backdrop-blur">
-            <h3 className="font-bold text-white">{addOn.name}</h3>
-            <p className="mt-4 text-3xl font-bold">{addOn.price}</p>
-            <p className="mt-1 text-xs font-semibold text-blue-200">{addOn.term}</p>
-            <p className="mt-4 text-sm leading-6 text-blue-100">{addOn.description}</p>
-          </article>)}
-        </div>
-        <div className="mt-6 rounded-2xl border border-amber-200/30 bg-amber-100/10 p-5">
-          <p className="font-bold text-amber-100">Company-risk checks</p>
-          <p className="mt-2 text-sm leading-6 text-blue-100">Pricing will be published only after supplier costs, API access and data rights are confirmed. This service will not be advertised as unlimited.</p>
-        </div>
+      <div className="mx-auto max-w-7xl">
+        <PricingCalculator />
       </div>
     </section>
 
