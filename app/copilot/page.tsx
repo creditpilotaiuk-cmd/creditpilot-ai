@@ -37,22 +37,22 @@ export default async function CopilotPage({ searchParams }: { searchParams: Prom
 
         {params.error && <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">{params.error}</div>}
 
-        <section className="relative isolate overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b1d49] via-[#16479e] to-[#2764ff] p-6 text-white shadow-[0_24px_60px_rgba(30,64,175,0.28)] sm:p-8">
-          <div aria-hidden="true" className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
-          <div aria-hidden="true" className="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-violet-400/15 blur-3xl" />
-          <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+        <section className="relative isolate overflow-hidden rounded-3xl border border-blue-200 bg-gradient-to-br from-white via-blue-50 to-cyan-50 p-6 text-ink shadow-lg shadow-blue-100/50 sm:p-7">
+          <div aria-hidden="true" className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-cyan-200/25 blur-3xl" />
+          <div aria-hidden="true" className="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-blue-200/20 blur-3xl" />
+          <div className="relative grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-cyan-100"><BrainCircuit size={15} /> AI collection intelligence</span>
-              <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">Generate today&apos;s action plan</h2>
-              <p className="mt-4 max-w-3xl leading-7 text-blue-100">Review risk signals, missed promises, payment-plan guidance, reminder tone and follow-up priorities using your live workspace data.</p>
-              <div className="mt-6 flex flex-wrap gap-3 text-xs font-semibold text-blue-100">
-                <span className="rounded-full bg-white/10 px-3 py-2">Priority cases</span>
-                <span className="rounded-full bg-white/10 px-3 py-2">Promise alerts</span>
-                <span className="rounded-full bg-white/10 px-3 py-2">Recommended follow-ups</span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-100/80 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-blue-700"><BrainCircuit size={15} /> AI collection intelligence</span>
+              <h2 className="mt-4 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Generate today&apos;s action plan</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">Review risk signals, missed promises, payment-plan guidance, reminder tone and follow-up priorities using your live workspace data.</p>
+              <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-blue-700">
+                <span className="rounded-full border border-blue-100 bg-white/80 px-3 py-2">Priority cases</span>
+                <span className="rounded-full border border-blue-100 bg-white/80 px-3 py-2">Promise alerts</span>
+                <span className="rounded-full border border-blue-100 bg-white/80 px-3 py-2">Recommended follow-ups</span>
               </div>
             </div>
             <form action={generateCollectionIntelligence}>
-              <button className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-electric shadow-xl transition hover:-translate-y-0.5 hover:shadow-2xl" type="submit">Run AI review <Sparkles className="ml-2" size={18} /></button>
+              <button className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-electric shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl" type="submit">Run AI review <Sparkles className="ml-2" size={18} /></button>
             </form>
           </div>
 
