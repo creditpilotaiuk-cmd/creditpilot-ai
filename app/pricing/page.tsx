@@ -7,6 +7,7 @@ import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { requestCancellation } from "./actions";
 
 export const dynamic = "force-dynamic";
+// Deployment retry after a transient database migration lock.
 
 const plans = [
   {
