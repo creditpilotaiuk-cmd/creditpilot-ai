@@ -6,6 +6,7 @@ import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { analyseCustomerReply, askCopilot, generateCollectionIntelligence } from "./actions";
 
 export const dynamic = "force-dynamic";
+// Deployment retry after a transient database migration lock.
 
 const suggestedQuestions = [
   "Who should I chase today?",
