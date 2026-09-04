@@ -77,7 +77,7 @@ export default async function CollectionsPage() {
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-blue-100"><Sparkles size={15} /> Recommended focus</span>
               <h2 className="mt-4 text-2xl font-bold">{priorityCase ? priorityCase.decision.action : "Bring in your invoices to build today’s priorities"}</h2>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-blue-100">{priorityCase ? `${priorityCase.invoice.customer.name} · ${money(Number(priorityCase.invoice.amount))} · Priority Score ${priorityCase.decision.score}. Review the evidence and confirm the next action.` : "Import your invoice data and CreditPilot will organise open cases by overdue age, balance, recorded risk, chase history and broken promises."}</p>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-blue-100">{priorityCase ? `${priorityCase.invoice.customer.name} · ${money(Number(priorityCase.invoice.amount))} · Priority Score ${priorityCase.decision.score}. Review the evidence and confirm the next action.` : "Import your invoice data and CreditPilot AI will organise open cases by overdue age, balance, recorded risk, chase history and broken promises."}</p>
             </div>
             <Link href={priorityCase ? "#priority-cases" : "/invoices"} className="inline-flex w-fit items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-bold text-electric shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl">
               {priorityCase ? "Review priority case" : "Import invoice data"} <ArrowRight className="ml-2" size={17} />
@@ -89,7 +89,7 @@ export default async function CollectionsPage() {
           <div className="flex flex-col gap-4 border-b border-slate-200 bg-gradient-to-r from-white to-blue-50/70 p-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-xl font-bold text-ink">Prioritised collection cases</h2>
-              <p className="mt-1 text-sm text-slate-500">{cases.length} open case{cases.length === 1 ? "" : "s"} · highest CreditPilot Priority Score first</p>
+              <p className="mt-1 text-sm text-slate-500">{cases.length} open case{cases.length === 1 ? "" : "s"} · highest CreditPilot AI Priority Score first</p>
             </div>
             {cases.length > 0 && <span className="w-fit rounded-full bg-blue-100 px-4 py-2 text-xs font-bold text-blue-800">Focus on the first action</span>}
           </div>
@@ -145,7 +145,7 @@ export default async function CollectionsPage() {
           </div>}
         </section>
 
-        <p className="text-xs leading-5 text-slate-500">CreditPilot Priority Scores are operational guidance based only on information recorded in this workspace. They are not credit ratings or legal advice.</p>
+        <p className="text-xs leading-5 text-slate-500">CreditPilot AI Priority Scores are operational guidance based only on information recorded in this workspace. They are not credit ratings or legal advice.</p>
       </div>
     </div>
   </main>;
