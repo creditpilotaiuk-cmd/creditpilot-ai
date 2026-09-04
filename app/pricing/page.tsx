@@ -105,7 +105,6 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
       <DashboardSidebar />
       <div className="min-w-0 flex-1">
         <header className="border-b bg-white px-5 py-4 sm:px-8">
-          <p className="text-sm text-slate-500">Account and billing</p>
           <h1 className="text-xl font-bold text-ink">Membership</h1>
         </header>
 
