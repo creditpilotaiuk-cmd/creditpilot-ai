@@ -315,3 +315,56 @@
     }
   }
 }
+
+
+@layer components {
+  /* Compact, light introductory panels throughout the signed-in workspace */
+  main.flex section[class*="from-[#07183f]"],
+  main.flex section[class*="from-[#10285f]"] {
+    border: 1px solid rgba(147, 197, 253, 0.7) !important;
+    background: linear-gradient(135deg, #ffffff 0%, #eff6ff 52%, #ecfeff 100%) !important;
+    color: #07183f !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.1) !important;
+  }
+
+  main.flex section[class*="from-[#07183f]"] > div.absolute,
+  main.flex section[class*="from-[#10285f]"] > div.absolute {
+    display: none;
+  }
+
+  main.flex section[class*="from-[#07183f]"] h1,
+  main.flex section[class*="from-[#07183f]"] h2,
+  main.flex section[class*="from-[#07183f]"] h3,
+  main.flex section[class*="from-[#10285f]"] h1,
+  main.flex section[class*="from-[#10285f]"] h2,
+  main.flex section[class*="from-[#10285f]"] h3 {
+    color: #07183f !important;
+    font-size: clamp(1.4rem, 2vw, 1.875rem) !important;
+    line-height: 1.2 !important;
+  }
+
+  main.flex section[class*="from-[#07183f]"] .text-white,
+  main.flex section[class*="from-[#07183f]"] .text-blue-100,
+  main.flex section[class*="from-[#07183f]"] .text-blue-200,
+  main.flex section[class*="from-[#10285f]"] .text-white,
+  main.flex section[class*="from-[#10285f]"] .text-blue-100,
+  main.flex section[class*="from-[#10285f]"] .text-blue-200 {
+    color: #52637a !important;
+  }
+
+  main.flex section[class*="from-[#07183f]"] [class*="bg-white/10"],
+  main.flex section[class*="from-[#07183f]"] [class*="bg-white/15"],
+  main.flex section[class*="from-[#10285f]"] [class*="bg-white/10"],
+  main.flex section[class*="from-[#10285f]"] [class*="bg-white/15"] {
+    border-color: rgba(147, 197, 253, 0.55) !important;
+    background: rgba(219, 234, 254, 0.72) !important;
+  }
+
+  @media (min-width: 640px) {
+    main.flex section[class*="from-[#07183f]"],
+    main.flex section[class*="from-[#10285f]"] {
+      padding: 1.75rem !important;
+    }
+  }
+}
