@@ -157,3 +157,43 @@ export async function sendReminder(formData: FormData) {
   }
   redirect("/reminders?sent=1");
 }
+
+
+export async function curateReminderDrafts() {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) redirect("/login");
+
+  const reminders = await prisma.reminder.findMany({
+    where: { companyId: user.companyId, stage: { in: [1, 2, 3] } },
+    orderBy: { createdAt: "desc" },
+  });
+  const keep = [1, 2, 3]
+    .map((stage) => reminders.find((reminder) => reminder.stage === stage))
+    .filter((reminder): reminder is NonNullable<typeof reminder> => Boolean(reminder));
+
+  if (keep.length !== 3) redirect("/reminders?error=missing-stages");
+
+  const keepIds = keep.map((reminder) => reminder.id);
+  await prisma.$transaction([
+    ...keep.map((reminder) => prisma.reminder.update({
+      where: { id: reminder.id },
+      data: { status: "DRAFT", scheduledFor: null, sentAt: null },
+    })),
+    prisma.reminder.deleteMany({
+      where: { companyId: user.companyId, id: { notIn: keepIds } },
+    }),
+    prisma.auditEvent.create({
+      data: {
+        companyId: user.companyId,
+        userId: user.id,
+        action: "REMINDER_WORKSPACE_CURATED",
+        entity: "Reminder",
+        metadata: { keptReminderIds: keepIds, stages: [1, 2, 3] },
+      },
+    }),
+  ]);
+
+  redirect("/reminders?curated=1");
+}
