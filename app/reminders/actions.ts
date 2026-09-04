@@ -165,13 +165,20 @@ export async function curateReminderDrafts() {
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user) redirect("/login");
 
-  const reminders = await prisma.reminder.findMany({
-    where: { companyId: user.companyId, stage: { in: [1, 2, 3] } },
+  const targets = [
+    { stage: 1, invoiceNumber: "INV-001" },
+    { stage: 2, invoiceNumber: "INV-001" },
+    { stage: 3, invoiceNumber: "INV-002" },
+  ];
+  const selected = await Promise.all(targets.map((target) => prisma.reminder.findFirst({
+    where: {
+      companyId: user.companyId,
+      stage: target.stage,
+      invoice: { number: target.invoiceNumber },
+    },
     orderBy: { createdAt: "desc" },
-  });
-  const keep = [1, 2, 3]
-    .map((stage) => reminders.find((reminder) => reminder.stage === stage))
-    .filter((reminder): reminder is NonNullable<typeof reminder> => Boolean(reminder));
+  })));
+  const keep = selected.filter((reminder): reminder is NonNullable<typeof reminder> => Boolean(reminder));
 
   if (keep.length !== 3) redirect("/reminders?error=missing-stages");
 
