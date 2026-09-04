@@ -206,7 +206,25 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
               <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-cyan-200/45 blur-3xl" />
               <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-1/3 h-52 w-52 rounded-full bg-violet-200/40 blur-3xl" />
               <div className="relative flex flex-wrap items-end justify-between gap-4"><div className="max-w-3xl"><p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">Premium add-ons</p><h2 className="mt-2 text-2xl font-bold tracking-tight">Add capacity without changing membership.</h2><p className="mt-2 text-sm leading-6 text-slate-600">Increase invoice capacity or user access only when your business needs it.</p></div><span className="inline-flex items-center rounded-full border border-blue-200 bg-white/70 px-3 py-2 text-xs font-bold text-blue-700 shadow-sm backdrop-blur"><Zap className="mr-2 text-cyan-500" size={15} />Flexible monthly capacity</span></div>
-              <div className="relative mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{premiumAddOns.map(addOn => <article key={addOn.name} className="group rounded-2xl border border-white/90 bg-white/70 p-4 shadow-sm backdrop-blur transition duration-200 hover:-translate-y-1 hover:border-blue-200 hover:bg-white hover:shadow-lg"><span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 text-blue-600"><CreditCard size={18} /></span><p className="mt-3 text-sm font-bold text-ink">{addOn.name}</p><p className="mt-2 text-2xl font-bold text-blue-700">{addOn.price}<span className="ml-1.5 text-xs font-semibold text-slate-500">{addOn.term}</span></p><p className="mt-2 text-xs leading-5 text-slate-600">{addOn.description}</p></article>)}</div>
+              <div className="relative mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{premiumAddOns.map((addOn, index) => {
+                const accent = index === 0 ? "from-cyan-400 to-blue-500" : index === 1 ? "from-blue-500 to-indigo-600" : index === 2 ? "from-violet-500 to-fuchsia-500" : "from-indigo-500 to-violet-600";
+                const back = index === 0 ? "from-cyan-500 to-blue-600" : index === 1 ? "from-blue-600 to-indigo-700" : index === 2 ? "from-violet-600 to-fuchsia-600" : "from-indigo-600 to-violet-700";
+                return <article key={addOn.name} tabIndex={0} aria-label={`${addOn.name}. Hover or focus to view details.`} className="group h-[205px] cursor-pointer rounded-2xl outline-none [perspective:1200px]">
+                  <div className="relative h-full w-full transition-transform duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] group-focus:[transform:rotateY(180deg)]">
+                    <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl border border-white/90 bg-white/80 p-5 shadow-md backdrop-blur [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
+                      <div aria-hidden="true" className={`absolute -right-8 -top-10 h-28 w-28 rounded-full bg-gradient-to-br opacity-15 blur-xl ${accent}`} />
+                      <span className={`relative grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br text-white shadow-lg ${accent}`}>{index < 2 ? <Layers3 size={20} /> : <Sparkles size={20} />}</span>
+                      <p className="relative mt-4 text-sm font-bold text-ink">{addOn.name}</p>
+                      <p className="relative mt-2 text-3xl font-bold text-blue-700">{addOn.price}<span className="ml-1.5 text-xs font-semibold text-slate-500">{addOn.term}</span></p>
+                      <span className="relative mt-auto text-[10px] font-bold uppercase tracking-[0.14em] text-blue-500">View details →</span>
+                    </div>
+                    <div className={`absolute inset-0 flex flex-col justify-between rounded-2xl bg-gradient-to-br p-5 text-white shadow-xl [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] ${back}`}>
+                      <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/75">Add-on details</p><h3 className="mt-3 text-lg font-bold">{addOn.name}</h3><p className="mt-3 text-sm leading-6 text-white/90">{addOn.description}</p></div>
+                      <p className="text-sm font-bold">{addOn.price}<span className="ml-1 font-medium text-white/75">{addOn.term}</span></p>
+                    </div>
+                  </div>
+                </article>;
+              })}</div>
               <div className="relative mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-violet-200/80 bg-white/55 px-4 py-3 backdrop-blur"><div><p className="text-sm font-bold text-ink">Company-risk checks</p><p className="mt-0.5 text-xs leading-5 text-slate-600">Creditsafe pricing will be added after supplier costs, API access and data rights are confirmed. It will not be advertised as unlimited.</p></div><span className="rounded-full bg-violet-100 px-3 py-1.5 text-[11px] font-bold text-violet-700">Coming after supplier confirmation</span></div>
             </div>
           </section>
