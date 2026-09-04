@@ -147,20 +147,28 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
               <p className="w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-slate-600">Planned prices · VAT position to be confirmed</p>
             </div>
 
-            <div className="mt-9 grid gap-6 lg:grid-cols-3">
+            <div className="mt-9 grid gap-7 lg:grid-cols-3">
               {plans.map(plan => {
                 const id = plan.name.toLowerCase();
-                const highlights = plan.features.filter(feature => !feature.startsWith("Everything")).slice(0, 5);
-                return <article key={plan.name} className={`group relative flex flex-col overflow-hidden rounded-3xl border bg-white p-7 shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl ${plan.featured ? "border-electric ring-2 ring-electric/10" : "border-slate-200"}`}>
-                  {plan.featured && <span className="absolute right-5 top-5 rounded-full bg-electric px-3 py-1.5 text-xs font-bold text-white">Most popular</span>}
-                  <span className={`grid h-12 w-12 place-items-center rounded-2xl ${plan.featured ? "bg-blue-600 text-white" : "bg-blue-50 text-electric"}`}>{plan.featured ? <Sparkles size={22} /> : <Layers3 size={22} />}</span>
-                  <p className="mt-6 text-xs font-bold uppercase tracking-[0.15em] text-electric">{plan.strapline}</p>
-                  <h3 className="mt-2 text-3xl font-bold text-ink">{plan.name}</h3>
-                  <div className="mt-5 flex items-end gap-2"><span className="text-4xl font-bold text-ink">{plan.price}</span><span className="pb-1 text-sm font-semibold text-slate-500">/ month</span></div>
-                  <p className="mt-4 text-sm leading-6 text-slate-600">{plan.description}</p>
-                  <p className="mt-5 w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-bold text-blue-800">Up to {plan.limit}</p>
-                  <div className="mt-6 flex-1 space-y-3">{highlights.map(feature => <div key={feature} className="flex gap-2.5 text-sm text-slate-700"><CheckCircle2 className="mt-0.5 shrink-0 text-emerald-500" size={17} /><span>{feature}</span></div>)}</div>
-                  <a href={`#${id}`} className={`mt-7 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition ${plan.featured ? "bg-electric text-white hover:bg-blue-700" : "border border-blue-200 bg-blue-50 text-electric hover:bg-blue-100"}`}>Show all information <ArrowRight className="ml-2" size={16} /></a>
+                const highlights: Record<string, string[]> = {
+                  Starter: ["Priority Score and chase list", "Three-stage reminders", "Statements and payment promises"],
+                  Growth: ["Everything in Starter", "Copilot action plans", "Smart timing and behaviour insights"],
+                  Professional: ["Everything in Growth", "Complete collection histories", "Evidence packs and premium insights"],
+                };
+                const cardStyle = plan.name === "Starter"
+                  ? "border-cyan-200 bg-gradient-to-br from-white via-cyan-50/70 to-blue-100/70"
+                  : plan.featured
+                    ? "border-blue-500 bg-gradient-to-br from-white via-blue-50/80 to-violet-100/70 ring-2 ring-blue-500/10"
+                    : "border-violet-200 bg-gradient-to-br from-white via-indigo-50/60 to-violet-100/80";
+                return <article key={plan.name} className={`group relative flex min-h-[590px] flex-col overflow-hidden rounded-[2rem] border p-8 shadow-xl shadow-slate-200/60 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl ${cardStyle}`}>
+                  {plan.featured && <span className="absolute right-6 top-6 rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-blue-500/20">Most popular</span>}
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">{plan.featured ? "Recommended" : "Membership"}</p>
+                  <h3 className="mt-5 text-3xl font-bold text-ink">{plan.name}</h3>
+                  <div className="mt-7 flex items-end gap-2"><span className="text-5xl font-bold tracking-tight text-ink">{plan.price}</span><span className="pb-1.5 text-sm font-semibold text-slate-500">/ month</span></div>
+                  <p className="mt-5 min-h-[3rem] text-sm leading-6 text-slate-600">{plan.name === "Starter" ? "A consistent collection process for small teams." : plan.name === "Growth" ? "Intelligent follow-up for established SMEs." : "Deeper oversight, history and evidence for finance teams."}</p>
+                  <p className="mt-6 w-fit rounded-full bg-blue-50/90 px-4 py-2 text-xs font-bold text-blue-800 shadow-sm">{plan.limit}</p>
+                  <div className="mt-7 flex-1 space-y-4">{highlights[plan.name].map(feature => <div key={feature} className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="mt-0.5 shrink-0 text-emerald-500" size={18} /><span>{feature}</span></div>)}</div>
+                  <a href={`#${id}`} className={`mt-8 inline-flex w-full items-center justify-center rounded-2xl px-4 py-4 text-sm font-bold transition duration-200 ${plan.featured ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20 hover:bg-blue-700" : "border border-blue-200 bg-white/45 text-blue-600 hover:border-blue-300 hover:bg-white/80"}`}>Show all information <ArrowRight className="ml-3" size={17} /></a>
                 </article>;
               })}
             </div>
