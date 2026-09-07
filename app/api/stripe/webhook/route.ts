@@ -17,11 +17,20 @@ export async function POST(request: Request) {
   const payload = await request.text();
   if (!secret || !signature || !validSignature(payload, signature, secret)) return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
   const event = JSON.parse(payload);
-  if (["checkout.session.completed", "customer.subscription.created", "customer.subscription.updated"].includes(event.type)) {
+  if (["checkout.session.completed", "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"].includes(event.type)) {
     const object = event.data.object;
     const metadata = object.metadata || object.subscription_details?.metadata || {};
+    const subscriptionId = event.type === "checkout.session.completed" ? object.subscription : object.id;
+    const status = event.type === "customer.subscription.deleted" ? "canceled" : object.status || "active";
     if (metadata.companyId && ["Starter", "Growth", "Professional"].includes(metadata.plan)) {
-      await prisma.company.update({ where: { id: metadata.companyId }, data: { plan: metadata.plan, stripeCustomerId: object.customer || undefined } });
+      await prisma.company.update({ where: { id: metadata.companyId }, data: { plan: event.type === "customer.subscription.deleted" ? "BETA" : metadata.plan, stripeCustomerId: object.customer || undefined, stripeSubscriptionId: typeof subscriptionId === "string" ? subscriptionId : undefined, stripeSubscriptionStatus: status } });
+    }
+    if (metadata.companyId && metadata.addon && typeof subscriptionId === "string") {
+      await prisma.billingEntitlement.upsert({
+        where: { stripeSubscriptionId: subscriptionId },
+        create: { companyId: metadata.companyId, stripeSubscriptionId: subscriptionId, kind: metadata.addon, status },
+        update: { status },
+      });
     }
   }
   return NextResponse.json({ received: true });

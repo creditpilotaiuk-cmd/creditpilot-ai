@@ -8,16 +8,18 @@ type CatalogueItem = {
   testPrice?: string;
   type: "plan" | "addon";
   requiredPlan?: "Growth" | "Professional";
+  requiresPaidPlan?: boolean;
+  available?: boolean;
 };
 
 const catalogue: Record<string, CatalogueItem> = {
   Starter: { price: process.env.STRIPE_STARTER_PRICE_ID, type: "plan" },
   Growth: { price: process.env.STRIPE_GROWTH_PRICE_ID, type: "plan" },
   Professional: { price: process.env.STRIPE_PROFESSIONAL_PRICE_ID, type: "plan" },
-  "extra-250-invoices": { price: process.env.STRIPE_EXTRA_250_INVOICES_PRICE_ID || "price_1UD0EaLMDyY8z2tlX8rogbo8", testPrice: process.env.STRIPE_TEST_EXTRA_250_INVOICES_PRICE_ID || "price_1UD0nfLMDyY8z2tlCvZlQ9Fj", type: "addon" },
-  "extra-1000-invoices": { price: process.env.STRIPE_EXTRA_1000_INVOICES_PRICE_ID || "price_1UD0FOLMDyY8z2tle3vKsmYU", testPrice: process.env.STRIPE_TEST_EXTRA_1000_INVOICES_PRICE_ID || "price_1UD0oLLMDyY8z2tl5jEbztTK", type: "addon" },
-  "additional-growth-user": { price: process.env.STRIPE_ADDITIONAL_GROWTH_USER_PRICE_ID || "price_1UD0G8LMDyY8z2tl79Ow0vg4", testPrice: process.env.STRIPE_TEST_ADDITIONAL_GROWTH_USER_PRICE_ID || "price_1UD0p3LMDyY8z2tlNdrRHtgp", type: "addon", requiredPlan: "Growth" },
-  "additional-professional-user": { price: process.env.STRIPE_ADDITIONAL_PROFESSIONAL_USER_PRICE_ID || "price_1UD0H4LMDyY8z2tlnREvyhvx", testPrice: process.env.STRIPE_TEST_ADDITIONAL_PROFESSIONAL_USER_PRICE_ID || "price_1UD0q0LMDyY8z2tliQ0w6gSZ", type: "addon", requiredPlan: "Professional" },
+  "extra-250-invoices": { price: process.env.STRIPE_EXTRA_250_INVOICES_PRICE_ID || "price_1UD0EaLMDyY8z2tlX8rogbo8", testPrice: process.env.STRIPE_TEST_EXTRA_250_INVOICES_PRICE_ID || "price_1UD0nfLMDyY8z2tlCvZlQ9Fj", type: "addon", requiresPaidPlan: true },
+  "extra-1000-invoices": { price: process.env.STRIPE_EXTRA_1000_INVOICES_PRICE_ID || "price_1UD0FOLMDyY8z2tle3vKsmYU", testPrice: process.env.STRIPE_TEST_EXTRA_1000_INVOICES_PRICE_ID || "price_1UD0oLLMDyY8z2tl5jEbztTK", type: "addon", requiresPaidPlan: true },
+  "additional-growth-user": { price: process.env.STRIPE_ADDITIONAL_GROWTH_USER_PRICE_ID || "price_1UD0G8LMDyY8z2tl79Ow0vg4", testPrice: process.env.STRIPE_TEST_ADDITIONAL_GROWTH_USER_PRICE_ID || "price_1UD0p3LMDyY8z2tlNdrRHtgp", type: "addon", requiredPlan: "Growth", available: false },
+  "additional-professional-user": { price: process.env.STRIPE_ADDITIONAL_PROFESSIONAL_USER_PRICE_ID || "price_1UD0H4LMDyY8z2tlnREvyhvx", testPrice: process.env.STRIPE_TEST_ADDITIONAL_PROFESSIONAL_USER_PRICE_ID || "price_1UD0q0LMDyY8z2tliQ0w6gSZ", type: "addon", requiredPlan: "Professional", available: false },
 };
 
 export async function POST(request: Request) {
@@ -26,6 +28,7 @@ export async function POST(request: Request) {
   const { item } = await request.json();
   const selection = typeof item === "string" ? catalogue[item] : undefined;
   if (!selection) return NextResponse.json({ error: "This membership item is not configured yet." }, { status: 400 });
+  if (selection.available === false) return NextResponse.json({ error: "Additional user seats will be available once team invitations are ready." }, { status: 400 });
   const secretKey = stripeKey();
   const isTestMode = secretKey.startsWith("sk_test_");
   const price = isTestMode && selection.testPrice ? selection.testPrice : selection.price;
@@ -34,6 +37,9 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Account not found." }, { status: 404 });
   if (selection.requiredPlan && user.company.plan.toLowerCase() !== selection.requiredPlan.toLowerCase()) {
     return NextResponse.json({ error: `This add-on requires an active ${selection.requiredPlan} membership.` }, { status: 400 });
+  }
+  if (selection.requiresPaidPlan && !["starter", "growth", "professional"].includes(user.company.plan.toLowerCase())) {
+    return NextResponse.json({ error: "Choose a paid CreditPilot membership before adding invoice capacity." }, { status: 400 });
   }
   const baseUrl = process.env.AUTH_URL || `https://${process.env.VERCEL_URL}` || "http://localhost:3000";
   const metadata = selection.type === "plan" ? { plan: item } : { addon: item };
