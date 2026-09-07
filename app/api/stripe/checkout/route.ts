@@ -27,7 +27,8 @@ export async function POST(request: Request) {
   const selection = typeof item === "string" ? catalogue[item] : undefined;
   if (!selection) return NextResponse.json({ error: "This membership item is not configured yet." }, { status: 400 });
   const secretKey = stripeKey();
-  const price = secretKey.startsWith("sk_test_") && selection.testPrice ? selection.testPrice : selection.price;
+  const isTestMode = secretKey.startsWith("sk_test_");
+  const price = isTestMode && selection.testPrice ? selection.testPrice : selection.price;
   if (!price) return NextResponse.json({ error: "This membership item is not configured yet." }, { status: 400 });
   const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) return NextResponse.json({ error: "Account not found." }, { status: 404 });
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
   }
   const baseUrl = process.env.AUTH_URL || `https://${process.env.VERCEL_URL}` || "http://localhost:3000";
   const metadata = selection.type === "plan" ? { plan: item } : { addon: item };
-  const body = new URLSearchParams({ mode: "subscription", "line_items[0][price]": price, "line_items[0][quantity]": "1", ...(user.company.stripeCustomerId ? { customer: user.company.stripeCustomerId } : { customer_email: session.user.email }), "metadata[companyId]": user.companyId, "metadata[type]": selection.type, ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [`metadata[${key}]`, value])), "subscription_data[metadata][companyId]": user.companyId, "subscription_data[metadata][type]": selection.type, ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [`subscription_data[metadata][${key}]`, value])), success_url: `${baseUrl}/pricing?success=1&type=${selection.type}`, cancel_url: `${baseUrl}/pricing?cancelled_checkout=1` });
+  const body = new URLSearchParams({ mode: "subscription", "line_items[0][price]": price, "line_items[0][quantity]": "1", ...(isTestMode ? { "managed_payments[enabled]": "false" } : {}), ...(user.company.stripeCustomerId ? { customer: user.company.stripeCustomerId } : { customer_email: session.user.email }), "metadata[companyId]": user.companyId, "metadata[type]": selection.type, ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [`metadata[${key}]`, value])), "subscription_data[metadata][companyId]": user.companyId, "subscription_data[metadata][type]": selection.type, ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [`subscription_data[metadata][${key}]`, value])), success_url: `${baseUrl}/pricing?success=1&type=${selection.type}`, cancel_url: `${baseUrl}/pricing?cancelled_checkout=1` });
   const result = await fetch("https://api.stripe.com/v1/checkout/sessions", { method: "POST", headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/x-www-form-urlencoded" }, body });
   const checkout = await result.json();
   if (!result.ok) return NextResponse.json({ error: checkout.error?.message || "Stripe could not start checkout." }, { status: 400 });
