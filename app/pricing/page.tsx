@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { requestCancellation } from "./actions";
+import { CheckoutButton } from "./checkout-button";
 
 export const dynamic = "force-dynamic";
 // Deployment retry 3 after a transient database migration lock.
@@ -69,6 +70,7 @@ const premiumAddOns = [
     price: "£25",
     term: "/ month",
     description: "Add capacity without moving to the next membership.",
+    key: "extra-250-invoices",
     wide: false,
   },
   {
@@ -76,6 +78,7 @@ const premiumAddOns = [
     price: "£65",
     term: "/ month",
     description: "A larger capacity boost for expanding debtor books.",
+    key: "extra-1000-invoices",
     wide: false,
   },
   {
@@ -83,6 +86,7 @@ const premiumAddOns = [
     price: "£12",
     term: "/ user / month",
     description: "Give another team member access to your Growth workspace.",
+    key: "additional-growth-user",
     wide: false,
   },
   {
@@ -90,6 +94,7 @@ const premiumAddOns = [
     price: "£18",
     term: "/ user / month",
     description: "Add a user where advanced team controls apply.",
+    key: "additional-professional-user",
     wide: false,
   },
 ];
@@ -219,7 +224,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
                     </div>
                     <div className={`absolute inset-0 flex flex-col justify-between rounded-2xl bg-gradient-to-br p-5 text-white shadow-xl [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] ${back}`}>
                       <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/75">Add-on details</p><h3 className="mt-3 text-lg font-bold">{addOn.name}</h3><p className="mt-3 text-sm leading-6 text-white/90">{addOn.description}</p></div>
-                      <p className="text-sm font-bold">{addOn.price}<span className="ml-1 font-medium text-white/75">{addOn.term}</span></p>
+                      <div><p className="mb-3 text-sm font-bold">{addOn.price}<span className="ml-1 font-medium text-white/75">{addOn.term}</span></p><CheckoutButton item={addOn.key} label="Add to membership" className="w-full rounded-xl border border-white/30 bg-white px-4 py-2.5 text-sm font-bold text-blue-700 transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-70" /></div>
                     </div>
                   </div>
                 </article>;
