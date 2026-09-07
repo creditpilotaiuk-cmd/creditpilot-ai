@@ -198,7 +198,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Everything included</p>
                     <div className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">{plan.features.map(feature => <div key={feature} className="flex gap-3"><CheckCircle2 className="mt-0.5 shrink-0 text-emerald-500" size={18} /><p className="text-sm leading-6 text-slate-700">{feature}</p></div>)}</div>
                     <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50/70 p-5"><p className="text-xs font-bold uppercase tracking-[0.14em] text-electric">Best suited to</p><p className="mt-2 text-sm leading-6 text-slate-700">{plan.bestFor}</p></div>
-                    <div className="mt-7 flex flex-wrap items-center gap-3"><CheckoutButton item={plan.name} label={`Choose ${plan.name}`} className={`rounded-xl px-5 py-3 text-sm font-bold ${plan.featured ? "bg-electric text-white" : "border border-slate-200 bg-slate-50 text-slate-700"}`} /><a href="#plans" className="text-sm font-bold text-electric">Back to comparison</a></div>
+                    <div className="mt-7 flex flex-wrap items-center gap-3"><button type="button" disabled className={`cursor-not-allowed rounded-xl px-5 py-3 text-sm font-bold opacity-70 ${plan.featured ? "bg-electric text-white" : "border border-slate-200 bg-slate-50 text-slate-500"}`}>Available after beta</button><a href="#plans" className="text-sm font-bold text-electric">Back to comparison</a></div>
                   </div>
                 </div>
               </article>;
@@ -218,7 +218,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
                   <h3 className="relative mt-4 text-sm font-bold text-ink">{addOn.name}</h3>
                   <p className="relative mt-2 text-3xl font-bold text-blue-700">{addOn.price}<span className="ml-1.5 text-xs font-semibold text-slate-500">{addOn.term}</span></p>
                   <p className="relative mt-3 flex-1 text-sm leading-6 text-slate-600">{addOn.description}</p>
-                  {addOn.key.includes("user") ? <button disabled className="mt-4 w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-bold text-slate-500">Coming with team access</button> : <CheckoutButton item={addOn.key} label="Add to membership" className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-70" />}
+                  <CheckoutButton item={addOn.key} label="Add to membership" className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-70" />
                 </article>;
               })}</div>
               <div className="relative mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-violet-200/80 bg-white/55 px-4 py-3 backdrop-blur"><div><p className="text-sm font-bold text-ink">Company-risk checks</p><p className="mt-0.5 text-xs leading-5 text-slate-600">Creditsafe pricing will be added after supplier costs, API access and data rights are confirmed. It will not be advertised as unlimited.</p></div><span className="rounded-full bg-violet-100 px-3 py-1.5 text-[11px] font-bold text-violet-700">Coming after supplier confirmation</span></div>
