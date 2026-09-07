@@ -25,7 +25,7 @@ export default function PrivacyPage() {
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-blue-100"><ShieldCheck size={15} />Legal · Privacy</span>
           <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-6xl">Privacy Notice</h1>
-          <p className="mt-4 text-sm font-semibold text-blue-200">Last updated: 27 August 2026</p>
+          <div className="mt-4 flex flex-wrap items-center gap-3"><p className="text-sm font-semibold text-blue-200">Last updated: 27 August 2026</p><a href="/creditpilot-ai-privacy-notice.pdf" download className="inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/20"><Download size={15} />Download PDF</a></div>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-blue-100">This notice explains how CreditPilot AI handles personal information in its credit-control system of action. It covers account users and people whose contact or collection information is held in a customer workspace.</p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">

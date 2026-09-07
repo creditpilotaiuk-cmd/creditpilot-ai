@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Bot, CheckCircle2, Clock3, CreditCard, Database, FileCheck2, LockKeyhole, Mail, Scale, ShieldCheck, Sparkles, UserCheck, Wrench, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRight, Bot, CheckCircle2, Clock3, CreditCard, Database, Download, FileCheck2, LockKeyhole, Mail, Scale, ShieldCheck, Sparkles, UserCheck, Wrench, type LucideIcon } from "lucide-react";
 import { MarketingNav } from "@/components/marketing-nav";
 
 const clauses = [
@@ -25,7 +25,7 @@ export default function TermsPage() {
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-blue-100"><Scale size={15} />Legal · Beta terms</span>
           <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-6xl">Terms and Conditions</h1>
-          <p className="mt-4 text-sm font-semibold text-blue-200">Last updated: 27 August 2026</p>
+          <div className="mt-4 flex flex-wrap items-center gap-3"><p className="text-sm font-semibold text-blue-200">Last updated: 27 August 2026</p><a href="/creditpilot-ai-terms-and-conditions.pdf" download className="inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/20"><Download size={15} />Download PDF</a></div>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-blue-100">These terms govern the CreditPilot AI beta, a dedicated credit-control workflow service that works alongside accounting software. By creating an account or using the service, you agree to them.</p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
