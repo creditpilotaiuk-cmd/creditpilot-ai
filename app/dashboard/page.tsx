@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
+import { MembershipUsageCard } from "@/components/membership-usage-card";
 import { TimeGreeting } from "@/components/time-greeting";
 
 export const dynamic = "force-dynamic";
@@ -70,6 +71,8 @@ export default async function DashboardPage() {
           <Card icon={CheckCircle2} label="Paid to date" value={money(paid)} tone="green" />
           <Card icon={Users} label="Customers" value={String(customerCount)} tone="slate" />
         </section>
+
+        <MembershipUsageCard plan={user.company.plan} activeInvoices={activeInvoices.length} />
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
