@@ -198,7 +198,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Everything included</p>
                     <div className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">{plan.features.map(feature => <div key={feature} className="flex gap-3"><CheckCircle2 className="mt-0.5 shrink-0 text-emerald-500" size={18} /><p className="text-sm leading-6 text-slate-700">{feature}</p></div>)}</div>
                     <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50/70 p-5"><p className="text-xs font-bold uppercase tracking-[0.14em] text-electric">Best suited to</p><p className="mt-2 text-sm leading-6 text-slate-700">{plan.bestFor}</p></div>
-                    <div className="mt-7 flex flex-wrap items-center gap-3"><button type="button" disabled className={`cursor-not-allowed rounded-xl px-5 py-3 text-sm font-bold opacity-70 ${plan.featured ? "bg-electric text-white" : "border border-slate-200 bg-slate-50 text-slate-500"}`}>Available after beta</button><a href="#plans" className="text-sm font-bold text-electric">Back to comparison</a></div>
+                    <div className="mt-7 flex flex-wrap items-center gap-3"><CheckoutButton item={plan.name} label={`Choose ${plan.name}`} className={`rounded-xl px-5 py-3 text-sm font-bold ${plan.featured ? "bg-electric text-white" : "border border-slate-200 bg-slate-50 text-slate-700"}`} /><a href="#plans" className="text-sm font-bold text-electric">Back to comparison</a></div>
                   </div>
                 </div>
               </article>;
