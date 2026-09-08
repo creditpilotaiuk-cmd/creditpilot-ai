@@ -7,6 +7,22 @@ import { createInvoiceToken } from "@/lib/invoice-link";
 import { detectSmartReminderPattern } from "@/lib/smart-reminder-timing";
 import { brandedEmail, textToEmailHtml } from "@/lib/email-brand";
 
+function fillReminderPlaceholders(body: string, invoice: { number: string; amount: unknown }, customer: { name: string; contactName: string | null }) {
+  const recipient = customer.contactName || customer.name;
+  const amount = `£${Number(invoice.amount).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
+  const filled = body
+    .replace(/\[(?:customer\s*name|customer)\]/gi, recipient)
+    .replace(/\[(?:amount|outstanding\s*balance|value)\]/gi, amount)
+    .replace(/\[(?:invoice\s*number\(s\)|invoice\s*number|invoice\(s\)|invoice)\]/gi, invoice.number);
+
+  const missingDetails = [
+    !filled.toLocaleLowerCase().includes(invoice.number.toLocaleLowerCase()) ? `Invoice number: ${invoice.number}` : "",
+    !filled.includes(amount) ? `Outstanding balance: ${amount}` : "",
+  ].filter(Boolean);
+
+  return missingDetails.length ? `${filled}\n\nInvoice details:\n${missingDetails.join("\n")}` : filled;
+}
+
 export async function generateReminderDrafts() {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
@@ -147,10 +163,11 @@ export async function sendReminder(formData: FormData) {
   const stripeDetails = reminder.company.paymentMethods === "STRIPE" || reminder.company.paymentMethods === "BOTH" ? "\n\nYou can also pay securely online by card using the payment option provided by our accounts team." : "";
   const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "https://creditpilotai.co.uk";
   const invoiceUrl = `${baseUrl.replace(/\/$/, "")}/invoice/${createInvoiceToken(reminder.invoice.id)}`;
-  const emailText = `${reminder.body}${paymentDetails}${stripeDetails}\n\nView your invoice and payment options securely:\n${invoiceUrl}`;
+  const renderedReminderBody = fillReminderPlaceholders(reminder.body, reminder.invoice, reminder.customer);
+  const emailText = `${renderedReminderBody}${paymentDetails}${stripeDetails}\n\nView your invoice and payment options securely:\n${invoiceUrl}`;
   const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [reminder.customer.email], subject: reminder.subject, text: emailText, html: brandedEmail(`<p>${textToEmailHtml(emailText)}</p>`, reminder.company.name) }) });
   if (!response.ok) { await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "FAILED" } }); redirect("/reminders?error=send-failed"); }
-  await prisma.reminder.update({ where: { id: reminder.id }, data: { status: "SENT", sentAt: new Date() } });
+  await prisma.reminder.update({ where: { id: reminder.id }, data: { body: renderedReminderBody, status: "SENT", sentAt: new Date() } });
   await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "REMINDER_SENT", entity: "Invoice", entityId: reminder.invoiceId, metadata: { previousValue: "SCHEDULED", newValue: { status: "SENT", recipient: reminder.customer.email, stage: reminder.stage }, customerId: reminder.customerId, ipAddress: null } } });
   if (reminder.stage === 3) {
     await prisma.aIRecommendation.create({ data: { companyId: user.companyId, customerId: reminder.customerId, invoiceId: reminder.invoiceId, title: `Escalation required: ${reminder.invoice.number}`, rationale: `The final demand has been sent and invoice ${reminder.invoice.number} remains unpaid. Automatic reminders have now ended.`, action: "Review and choose the next action", riskLevel: "HIGH" } });
