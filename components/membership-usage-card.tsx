@@ -38,12 +38,12 @@ export function MembershipUsageCard({ plan, activeInvoices }: { plan: string; ac
   const atCapacity = activeInvoices >= limit;
   const nearingCapacity = !atCapacity && usage >= 80;
   const nextPlan = paidPlan === "STARTER" ? "Growth" : paidPlan === "GROWTH" ? "Professional" : null;
-  const title = atCapacity ? "You&apos;ve reached your included invoice capacity" : nearingCapacity ? "You&apos;re approaching your invoice capacity" : "Your included capacity is on track";
+  const title = atCapacity ? "You’ve reached your included invoice capacity" : nearingCapacity ? "You’re approaching your invoice capacity" : "Your included capacity is on track";
   const copy = atCapacity
     ? "Choose extra invoice capacity if your team only needs more room, or move up a membership if you also need the next level of features."
     : nearingCapacity
       ? "Plan ahead: add invoice capacity for a small increase, or upgrade if the next membership better fits your team."
-      : "We&apos;ll alert you here before you run out of included invoice capacity.";
+      : "We’ll alert you here before you run out of included invoice capacity.";
   const Icon = atCapacity || nearingCapacity ? TriangleAlert : CheckCircle2;
   const iconStyle = atCapacity ? "bg-rose-100 text-rose-700" : nearingCapacity ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700";
   const barStyle = atCapacity ? "bg-rose-500" : nearingCapacity ? "bg-amber-500" : "bg-emerald-500";
