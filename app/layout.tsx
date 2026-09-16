@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { HelpChatLauncher } from "@/components/help-chat-launcher";
 
 export const metadata: Metadata = {
   title: "CreditPilot AI | Credit control beyond your accounting software",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body>{children}<HelpChatLauncher /></body></html>;
 }
