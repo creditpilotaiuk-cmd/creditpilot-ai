@@ -23,9 +23,11 @@ const catalogue: Record<string, CatalogueItem> = {
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.email) return NextResponse.json({ error: "Please sign in first." }, { status: 401 });
-  const { item } = await request.json();
+  const { item, buyerType, immediateAccessConsent } = await request.json();
   const selection = typeof item === "string" ? catalogue[item] : undefined;
   if (!selection) return NextResponse.json({ error: "This membership item is not configured yet." }, { status: 400 });
+  if (buyerType !== "business" && buyerType !== "consumer") return NextResponse.json({ error: "Please select whether you are buying for a business or for personal use." }, { status: 400 });
+  if (buyerType === "consumer" && immediateAccessConsent !== true) return NextResponse.json({ error: "Immediate-access consent is required for a personal-use purchase." }, { status: 400 });
   const secretKey = stripeKey();
   const isTestMode = secretKey.startsWith("sk_test_");
   const price = isTestMode && selection.testPrice ? selection.testPrice : selection.price;
@@ -43,7 +45,8 @@ export async function POST(request: Request) {
     if (customerCheck.ok) stripeCustomerId = user.company.stripeCustomerId;
   }
   const baseUrl = process.env.AUTH_URL || `https://${process.env.VERCEL_URL}` || "http://localhost:3000";
-  const metadata = selection.type === "plan" ? { plan: item } : { addon: item };
+  const consentRecordedAt = new Date().toISOString();
+  const metadata = { ...(selection.type === "plan" ? { plan: item } : { addon: item }), buyerType, immediateAccessConsent: buyerType === "consumer" ? "true" : "not-applicable", consentRecordedAt };
   const body = new URLSearchParams({ mode: "subscription", "line_items[0][price]": price, "line_items[0][quantity]": "1", ...(isTestMode ? { "managed_payments[enabled]": "false" } : {}), ...(stripeCustomerId ? { customer: stripeCustomerId } : { customer_email: session.user.email }), "metadata[companyId]": user.companyId, "metadata[type]": selection.type, ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [`metadata[${key}]`, value])), "subscription_data[metadata][companyId]": user.companyId, "subscription_data[metadata][type]": selection.type, ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [`subscription_data[metadata][${key}]`, value])), success_url: `${baseUrl}/pricing?success=1&type=${selection.type}`, cancel_url: `${baseUrl}/pricing?cancelled_checkout=1` });
   const result = await fetch("https://api.stripe.com/v1/checkout/sessions", { method: "POST", headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/x-www-form-urlencoded" }, body });
   const checkout = await result.json();
