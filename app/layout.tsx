@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { HelpChatLauncher } from "@/components/help-chat-launcher";
 
@@ -8,5 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}<HelpChatLauncher /></body></html>;
+  return <html lang="en"><body>{children}<HelpChatLauncher /><Script id="tawk-live-chat" strategy="afterInteractive">{`var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+Tawk_API.onBeforeLoad=function(){Tawk_API.hideWidget();};
+(function(){var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];s1.async=true;s1.src="https://embed.tawk.to/6aaa99692cfcaf3445e66fa4/1k2l6egpu";s1.charset="UTF-8";s1.setAttribute("crossorigin","*");s0.parentNode.insertBefore(s1,s0);})();`}</Script></body></html>;
 }
