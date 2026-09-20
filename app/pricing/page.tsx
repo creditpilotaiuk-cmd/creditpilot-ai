@@ -105,8 +105,11 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
   const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
   const irelandPricing = user.company.country === "IE";
-  const planPrices: Record<string, string> = irelandPricing ? { Starter: "€59", Growth: "€149", Professional: "€289" } : { Starter: "£49", Growth: "£129", Professional: "£249" };
-  const addOnPrices: Record<string, string> = irelandPricing ? { "extra-250-invoices": "€29", "extra-1000-invoices": "€75", "additional-growth-user": "€14", "additional-professional-user": "€21" } : { "extra-250-invoices": "£25", "extra-1000-invoices": "£65", "additional-growth-user": "£12", "additional-professional-user": "£18" };
+  const usPricing = user.company.country === "US";
+  const regionalBusinessOnly = irelandPricing || usPricing;
+  const regionalName = irelandPricing ? "Irish" : "US";
+  const planPrices: Record<string, string> = irelandPricing ? { Starter: "€59", Growth: "€149", Professional: "€289" } : usPricing ? { Starter: "$65", Growth: "$169", Professional: "$329" } : { Starter: "£49", Growth: "£129", Professional: "£249" };
+  const addOnPrices: Record<string, string> = irelandPricing ? { "extra-250-invoices": "€29", "extra-1000-invoices": "€75", "additional-growth-user": "€14", "additional-professional-user": "€21" } : usPricing ? { "extra-250-invoices": "$35", "extra-1000-invoices": "$85", "additional-growth-user": "$16", "additional-professional-user": "$24" } : { "extra-250-invoices": "£25", "extra-1000-invoices": "£65", "additional-growth-user": "£12", "additional-professional-user": "£18" };
   const plans = basePlans.map(plan => ({ ...plan, price: planPrices[plan.name] }));
   const premiumAddOns = basePremiumAddOns.map(addOn => ({ ...addOn, price: addOnPrices[addOn.key] }));
   const params = await searchParams;
@@ -120,13 +123,13 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
 
         <div className="mx-auto max-w-7xl p-5 sm:p-8">
           {params.success && <div className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700"><CheckCircle2 size={19} />Checkout complete. Your account will update once payment is confirmed.</div>}
-          {irelandPricing && <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900"><strong>Irish business customers only.</strong> Memberships are currently available for business use only while VAT treatment for consumer sales is being finalised.</div>}
+          {regionalBusinessOnly && <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900"><strong>{regionalName} business customers only.</strong> Memberships are currently available for business use only while consumer tax treatment is being finalised.</div>}
 
           <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#07183f] via-[#123d91] to-[#2867f0] p-6 text-white shadow-xl shadow-blue-900/15 sm:p-10">
             <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-cyan-300/20 blur-2xl" />
             <div className="relative grid gap-8 lg:grid-cols-[1.25fr_.75fr] lg:items-center">
               <div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-100"><Sparkles size={14} />Founding beta · {irelandPricing ? "€0" : "£0"}</span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-100"><Sparkles size={14} />Founding beta · {irelandPricing ? "€0" : usPricing ? "$0" : "£0"}</span>
                 <h2 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">Every current feature, free throughout the beta.</h2>
                 <p className="mt-4 max-w-2xl leading-7 text-blue-100">No subscription charge, payment card, contract or automatic paid conversion. We will give you advance notice before billing begins, and you will actively choose whether to continue.</p>
                 <div className="mt-6 flex flex-wrap gap-2 text-xs font-bold">
@@ -155,7 +158,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
           <section id="plans" className="scroll-mt-24 py-14">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="max-w-3xl"><p className="eyebrow">After the beta</p><h2 className="mt-2 text-3xl font-bold tracking-tight text-ink">Choose the control your business needs.</h2><p className="mt-3 leading-7 text-slate-600">Every membership supports a controlled collection workflow. Growth adds intelligent recommendations; Professional adds deeper evidence and oversight.</p></div>
-              <p className="w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-slate-600">Monthly prices in {irelandPricing ? "EUR" : "GBP"} · excluding applicable VAT</p>
+              <p className="w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-slate-600">Monthly prices in {irelandPricing ? "EUR" : usPricing ? "USD" : "GBP"} · excluding applicable taxes</p>
             </div>
 
             <div className="mt-9 grid gap-7 lg:grid-cols-3">
@@ -205,7 +208,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
                     <div className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">{plan.features.map(feature => <div key={feature} className="flex gap-3"><CheckCircle2 className="mt-0.5 shrink-0 text-emerald-500" size={18} /><p className="text-sm leading-6 text-slate-700">{feature}</p></div>)}</div>
                     <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50/70 p-5"><p className="text-xs font-bold uppercase tracking-[0.14em] text-electric">Best suited to</p><p className="mt-2 text-sm leading-6 text-slate-700">{plan.bestFor}</p></div>
                     <div className="mt-7 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 text-sm leading-6 text-slate-700"><p className="font-bold text-ink">Monthly membership, cancel anytime</p><p className="mt-1">No minimum term. Your membership renews monthly until cancelled and cancellation takes effect at the end of the paid month. Business customers do not normally have a statutory 14-day cooling-off right. Consumers buying for personal use may have a 14-day statutory cooling-off right; if they ask for immediate access, a proportionate charge may apply for service already supplied. If a payment fails, you will have a seven-day grace period before access may be suspended. Stripe provides your purchase confirmation and receipt or invoice.</p></div>
-                    <div className="mt-5 flex flex-wrap items-center gap-3"><CheckoutButton item={plan.name} businessOnly={irelandPricing} label={`Choose ${plan.name}`} className={`rounded-xl px-5 py-3 text-sm font-bold ${plan.featured ? "bg-electric text-white" : "border border-slate-200 bg-slate-50 text-slate-700"}`} /><a href="#plans" className="text-sm font-bold text-electric">Back to comparison</a></div>
+                    <div className="mt-5 flex flex-wrap items-center gap-3"><CheckoutButton item={plan.name} businessOnly={regionalBusinessOnly} businessOnlyLabel={regionalName} label={`Choose ${plan.name}`} className={`rounded-xl px-5 py-3 text-sm font-bold ${plan.featured ? "bg-electric text-white" : "border border-slate-200 bg-slate-50 text-slate-700"}`} /><a href="#plans" className="text-sm font-bold text-electric">Back to comparison</a></div>
                   </div>
                 </div>
               </article>;
@@ -225,7 +228,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
                   <h3 className="relative mt-4 text-sm font-bold text-ink">{addOn.name}</h3>
                   <p className="relative mt-2 text-3xl font-bold text-blue-700">{addOn.price}<span className="ml-1.5 text-xs font-semibold text-slate-500">{addOn.term}</span></p>
                   <p className="relative mt-3 flex-1 text-sm leading-6 text-slate-600">{addOn.description}</p>
-                  <CheckoutButton item={addOn.key} businessOnly={irelandPricing} label="Add to membership" className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-70" />
+                  <CheckoutButton item={addOn.key} businessOnly={regionalBusinessOnly} businessOnlyLabel={regionalName} label="Add to membership" className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-70" />
                 </article>;
               })}</div>
               <div className="relative mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-violet-200/80 bg-white/55 px-4 py-3 backdrop-blur"><div><p className="text-sm font-bold text-ink">Company-risk checks</p><p className="mt-0.5 text-xs leading-5 text-slate-600">Creditsafe pricing will be added after supplier costs, API access and data rights are confirmed. It will not be advertised as unlimited.</p></div><span className="rounded-full bg-violet-100 px-3 py-1.5 text-[11px] font-bold text-violet-700">Coming after supplier confirmation</span></div>

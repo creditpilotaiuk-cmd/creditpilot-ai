@@ -15,6 +15,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   if (!user) redirect("/login");
   const params = await searchParams;
   const isIrishWorkspace = user.company.country === "IE";
+  const isUSWorkspace = user.company.country === "US";
   const bankReady = isIrishWorkspace
     ? Boolean(user.company.bankAccountName && user.company.bankIban)
     : Boolean(user.company.bankAccountName && user.company.bankSortCode && user.company.bankAccountNumber);
@@ -80,7 +81,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-7">
               <Field name="personalName" label="Your name" value={user.name || ""} placeholder="Peter Ingham" help="Used for dashboard greetings and sender identification." />
               <Field name="name" label="Company name" value={user.company.name} placeholder="Your company" help="Shown as your business identity." />
-              <label className="block text-sm font-bold text-slate-700">Business country<select name="country" defaultValue={user.company.country} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal text-ink outline-none transition focus:border-electric focus:ring-4 focus:ring-blue-100"><option value="GB">United Kingdom — GBP</option><option value="IE">Ireland — EUR</option></select><span className="mt-1.5 block text-xs font-normal text-slate-400">This sets your workspace’s default currency and payment details.</span></label>
+              <label className="block text-sm font-bold text-slate-700">Business country<select name="country" defaultValue={user.company.country} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal text-ink outline-none transition focus:border-electric focus:ring-4 focus:ring-blue-100"><option value="GB">United Kingdom — GBP</option><option value="IE">Ireland — EUR</option><option value="US">United States — USD</option></select><span className="mt-1.5 block text-xs font-normal text-slate-400">This sets your workspace’s default currency and payment details.</span></label>
               <div className="sm:col-span-2"><Field name="billingEmail" label="Billing email" value={user.company.billingEmail || user.email} placeholder="accounts@company.co.uk" type="email" help="Used for membership and account notices." icon={<Mail size={16} />} /></div>
             </div>
           </section>
@@ -96,10 +97,10 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 </select>
               </label>
               <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/60 p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="flex items-center gap-2 font-bold text-ink"><Landmark size={18} className="text-electric" />Bank-transfer instructions</h3><p className="mt-1 text-sm text-slate-600">{isIrishWorkspace ? "Add your IBAN for euro bank transfers." : "Complete these fields if customers can pay by bank transfer."}</p></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${bankReady ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{bankReady ? "Details complete" : "Setup incomplete"}</span></div>
+                <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="flex items-center gap-2 font-bold text-ink"><Landmark size={18} className="text-electric" />Bank-transfer instructions</h3><p className="mt-1 text-sm text-slate-600">{isIrishWorkspace ? "Add your IBAN for euro bank transfers." : isUSWorkspace ? "Add your routing and account number for US bank transfers." : "Complete these fields if customers can pay by bank transfer."}</p></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${bankReady ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{bankReady ? "Details complete" : "Setup incomplete"}</span></div>
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   <Field name="bankAccountName" label="Account name" value={user.company.bankAccountName || ""} placeholder="Your business name" />
-                  {isIrishWorkspace ? <><Field name="bankIban" label="IBAN" value={user.company.bankIban || ""} placeholder="IE29AIBK93115212345678" /><Field name="bankBic" label="BIC / SWIFT (optional)" value={user.company.bankBic || ""} placeholder="AIBKIE2D" required={false} /></> : <><Field name="bankSortCode" label="Sort code" value={user.company.bankSortCode || ""} placeholder="12-34-56" /><Field name="bankAccountNumber" label="Account number" value={user.company.bankAccountNumber || ""} placeholder="12345678" /></>}
+                  {isIrishWorkspace ? <><Field name="bankIban" label="IBAN" value={user.company.bankIban || ""} placeholder="IE29AIBK93115212345678" /><Field name="bankBic" label="BIC / SWIFT (optional)" value={user.company.bankBic || ""} placeholder="AIBKIE2D" required={false} /></> : <><Field name="bankSortCode" label={isUSWorkspace ? "Routing number" : "Sort code"} value={user.company.bankSortCode || ""} placeholder={isUSWorkspace ? "021000021" : "12-34-56"} /><Field name="bankAccountNumber" label="Account number" value={user.company.bankAccountNumber || ""} placeholder="12345678" /></>}
                   <Field name="paymentReference" label="Payment reference" value={user.company.paymentReference || ""} placeholder="Invoice number" />
                 </div>
               </div>

@@ -23,7 +23,7 @@ export async function registerAction(formData: FormData) {
   const country = text(formData, "country");
   const businessUse = formData.get("businessUse") === "on";
 
-  if (!name || !companyName || !email || password.length < 8 || !businessUse || !["GB", "IE"].includes(country)) redirect("/register?error=details");
+  if (!name || !companyName || !email || password.length < 8 || !businessUse || !["GB", "IE", "US"].includes(country)) redirect("/register?error=details");
   if (await prisma.user.findUnique({ where: { email } })) redirect("/register?error=exists");
 
   const passwordHash = await bcrypt.hash(password, 12);
@@ -33,7 +33,7 @@ export async function registerAction(formData: FormData) {
       slug: companySlug(companyName),
       billingEmail: email,
       country,
-      defaultCurrency: country === "IE" ? "EUR" : "GBP",
+      defaultCurrency: country === "IE" ? "EUR" : country === "US" ? "USD" : "GBP",
       businessUseConfirmedAt: new Date(),
       users: { create: { name, email, passwordHash, role: "OWNER" } },
     },
