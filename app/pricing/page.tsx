@@ -10,7 +10,7 @@ import { CheckoutButton } from "./checkout-button";
 export const dynamic = "force-dynamic";
 // Deployment retry 3 after a transient database migration lock.
 
-const plans = [
+const basePlans = [
   {
     name: "Starter",
     price: "£49",
@@ -64,7 +64,7 @@ const plans = [
   },
 ];
 
-const premiumAddOns = [
+const basePremiumAddOns = [
   {
     name: "Extra 250 invoices",
     price: "£25",
@@ -104,6 +104,11 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
   if (!session?.user?.email) redirect("/login");
   const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
+  const irelandPricing = user.company.country === "IE";
+  const planPrices: Record<string, string> = irelandPricing ? { Starter: "€59", Growth: "€149", Professional: "€289" } : { Starter: "£49", Growth: "£129", Professional: "£249" };
+  const addOnPrices: Record<string, string> = irelandPricing ? { "extra-250-invoices": "€29", "extra-1000-invoices": "€75", "additional-growth-user": "€14", "additional-professional-user": "€21" } : { "extra-250-invoices": "£25", "extra-1000-invoices": "£65", "additional-growth-user": "£12", "additional-professional-user": "£18" };
+  const plans = basePlans.map(plan => ({ ...plan, price: planPrices[plan.name] }));
+  const premiumAddOns = basePremiumAddOns.map(addOn => ({ ...addOn, price: addOnPrices[addOn.key] }));
   const params = await searchParams;
   return (
     <main className="flex min-h-screen">
@@ -120,7 +125,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
             <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-cyan-300/20 blur-2xl" />
             <div className="relative grid gap-8 lg:grid-cols-[1.25fr_.75fr] lg:items-center">
               <div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-100"><Sparkles size={14} />Founding beta · £0</span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-100"><Sparkles size={14} />Founding beta · {irelandPricing ? "€0" : "£0"}</span>
                 <h2 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">Every current feature, free throughout the beta.</h2>
                 <p className="mt-4 max-w-2xl leading-7 text-blue-100">No subscription charge, payment card, contract or automatic paid conversion. We will give you advance notice before billing begins, and you will actively choose whether to continue.</p>
                 <div className="mt-6 flex flex-wrap gap-2 text-xs font-bold">
@@ -149,7 +154,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
           <section id="plans" className="scroll-mt-24 py-14">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="max-w-3xl"><p className="eyebrow">After the beta</p><h2 className="mt-2 text-3xl font-bold tracking-tight text-ink">Choose the control your business needs.</h2><p className="mt-3 leading-7 text-slate-600">Every membership supports a controlled collection workflow. Growth adds intelligent recommendations; Professional adds deeper evidence and oversight.</p></div>
-              <p className="w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-slate-600">Planned prices · VAT position to be confirmed</p>
+              <p className="w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-slate-600">Monthly prices in {irelandPricing ? "EUR" : "GBP"} · excluding applicable VAT</p>
             </div>
 
             <div className="mt-9 grid gap-7 lg:grid-cols-3">

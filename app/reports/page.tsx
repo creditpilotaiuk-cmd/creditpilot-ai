@@ -4,15 +4,16 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
+import { formatWorkspaceCurrency } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
-const money = (n: unknown) => Number(n || 0).toLocaleString("en-GB", { style: "currency", currency: "GBP" });
 
 export default async function ReportsPage() {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
+  const money = (n: unknown) => formatWorkspaceCurrency(Number(n || 0), user.company.defaultCurrency, user.company.country);
 
   const invoices = await prisma.invoice.findMany({ where: { companyId: user.companyId }, include: { customer: true }, orderBy: { amount: "desc" } });
   const [reminders, promises] = await Promise.all([

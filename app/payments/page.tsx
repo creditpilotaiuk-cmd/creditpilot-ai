@@ -5,14 +5,18 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { recordAccountPayment, recordAccountPromise } from "./actions";
+import { formatWorkspaceCurrency, workspaceLocale } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 
 export default async function PaymentsPage({ searchParams }: { searchParams: Promise<{ payment?: string; promise?: string; error?: string }> }) {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
+  const money = (amount: number) => formatWorkspaceCurrency(amount, user.company.defaultCurrency, user.company.country);
+  const currencySymbol = user.company.defaultCurrency === "EUR" ? "€" : "£";
+  const locale = workspaceLocale(user.company.country);
 
   const [customers, invoices, promises, paymentEvents] = await Promise.all([
     prisma.customer.findMany({ where: { companyId: user.companyId }, orderBy: { name: "asc" } }),
@@ -51,7 +55,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
             <div className="mt-6 space-y-4">
               <Field label="Customer account"><select name="customerId" required className={inputClass}><option value="">Choose an account</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}</select></Field>
               <Field label="Invoice (optional)"><select name="invoiceId" className={inputClass}><option value="">Account-level promise</option>{invoices.map((invoice) => <option key={invoice.id} value={invoice.id}>{invoice.customer.name} · {invoice.number} · {money(Number(invoice.amount))}</option>)}</select></Field>
-              <div className="grid gap-4 sm:grid-cols-2"><Field label="Promised amount (£)"><input name="amount" type="number" min="0.01" step="0.01" required className={inputClass} /></Field><Field label="Promised date"><input name="promisedFor" type="date" min={today} required className={inputClass} /></Field></div>
+              <div className="grid gap-4 sm:grid-cols-2"><Field label={`Promised amount (${currencySymbol})`}><input name="amount" type="number" min="0.01" step="0.01" required className={inputClass} /></Field><Field label="Promised date"><input name="promisedFor" type="date" min={today} required className={inputClass} /></Field></div>
               <Field label="Notes (optional)"><textarea name="notes" rows={3} className={inputClass} placeholder="Agreed by phone, payment reference…" /></Field>
             </div>
             <button className="button-primary mt-5 w-full justify-center" type="submit"><CalendarClock className="mr-2" size={17} />Record promise</button>
@@ -62,7 +66,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
             <div className="mt-6 space-y-4">
               <Field label="Customer account"><select name="customerId" required className={inputClass}><option value="">Choose an account</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}</select></Field>
               <Field label="Invoice (optional)"><select name="invoiceId" className={inputClass}><option value="">Account-level payment</option>{invoices.map((invoice) => <option key={invoice.id} value={invoice.id}>{invoice.customer.name} · {invoice.number} · {money(Number(invoice.amount))}</option>)}</select></Field>
-              <div className="grid gap-4 sm:grid-cols-2"><Field label="Amount received (£)"><input name="amount" type="number" min="0.01" step="0.01" required className={inputClass} /></Field><Field label="Date received"><input name="receivedOn" type="date" max={today} defaultValue={today} required className={inputClass} /></Field></div>
+              <div className="grid gap-4 sm:grid-cols-2"><Field label={`Amount received (${currencySymbol})`}><input name="amount" type="number" min="0.01" step="0.01" required className={inputClass} /></Field><Field label="Date received"><input name="receivedOn" type="date" max={today} defaultValue={today} required className={inputClass} /></Field></div>
               <Field label="Reference (optional)"><input name="reference" className={inputClass} placeholder="Bank reference or receipt note" /></Field>
               <label className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-white p-3 text-sm text-slate-600"><input name="settlesInvoice" type="checkbox" className="mt-0.5 h-4 w-4 accent-emerald-600" /><span><strong className="text-ink">Mark the selected invoice as fully paid</strong><br />Leave unticked for a partial or account-level payment.</span></label>
             </div>
@@ -73,8 +77,8 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
           <div className="flex items-center gap-3"><History className="text-electric" size={21} /><div><h2 className="text-lg font-bold text-ink">Recent account records</h2><p className="text-sm text-slate-500">Latest promises and payments entered in this workspace.</p></div></div>
           {promises.length === 0 && paymentEvents.length === 0 ? <p className="mt-5 rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">No promises or incoming payments have been recorded yet.</p> : <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {promises.slice(0, 6).map((promise) => <div key={promise.id} className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4"><p className="text-xs font-bold uppercase text-violet-600">Payment promise</p><p className="mt-1 font-bold text-ink">{promise.customer.name} · {money(Number(promise.amount || 0))}</p><p className="mt-1 text-sm text-slate-500">{promise.invoice?.number || "Account level"} · due {promise.promisedFor.toLocaleDateString("en-GB")}</p></div>)}
-            {paymentEvents.slice(0, 6).map((event) => { const details = (event.metadata || {}) as Record<string, unknown>; const customer = customers.find((item) => item.id === event.entityId); return <div key={event.id} className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4"><p className="text-xs font-bold uppercase text-emerald-600">Payment received</p><p className="mt-1 font-bold text-ink">{customer?.name || "Customer account"} · {money(Number(details.amount || 0))}</p><p className="mt-1 text-sm text-slate-500">{String(details.invoiceNumber || "Account level")} · {String(details.receivedOn || event.createdAt.toLocaleDateString("en-GB"))}</p></div>; })}
+            {promises.slice(0, 6).map((promise) => <div key={promise.id} className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4"><p className="text-xs font-bold uppercase text-violet-600">Payment promise</p><p className="mt-1 font-bold text-ink">{promise.customer.name} · {money(Number(promise.amount || 0))}</p><p className="mt-1 text-sm text-slate-500">{promise.invoice?.number || "Account level"} · due {promise.promisedFor.toLocaleDateString(locale)}</p></div>)}
+            {paymentEvents.slice(0, 6).map((event) => { const details = (event.metadata || {}) as Record<string, unknown>; const customer = customers.find((item) => item.id === event.entityId); return <div key={event.id} className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4"><p className="text-xs font-bold uppercase text-emerald-600">Payment received</p><p className="mt-1 font-bold text-ink">{customer?.name || "Customer account"} · {money(Number(details.amount || 0))}</p><p className="mt-1 text-sm text-slate-500">{String(details.invoiceNumber || "Account level")} · {String(details.receivedOn || event.createdAt.toLocaleDateString(locale))}</p></div>; })}
           </div>}
         </section>
       </div>
@@ -90,8 +94,4 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Notice({ icon: Icon, text, colour }: { icon: typeof CheckCircle2; text: string; colour: "blue" | "emerald" }) {
   return <div className={`flex items-center gap-3 rounded-2xl border p-4 text-sm font-semibold ${colour === "blue" ? "border-blue-200 bg-blue-50 text-blue-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}><Icon size={19} />{text}</div>;
-}
-
-function money(amount: number) {
-  return amount.toLocaleString("en-GB", { style: "currency", currency: "GBP" });
 }

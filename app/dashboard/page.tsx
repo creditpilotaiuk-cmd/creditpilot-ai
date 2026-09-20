@@ -6,16 +6,17 @@ import { prisma } from "@/lib/prisma";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { MembershipUsageCard } from "@/components/membership-usage-card";
 import { TimeGreeting } from "@/components/time-greeting";
+import { formatWorkspaceCurrency, workspaceLocale } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
-const money = (n: unknown) => `£${Number(n || 0).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
-const date = (d: Date) => d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
   const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
+  const money = (n: unknown, currency = user.company.defaultCurrency) => formatWorkspaceCurrency(Number(n || 0), currency, user.company.country);
+  const date = (d: Date) => d.toLocaleDateString(workspaceLocale(user.company.country), { day: "2-digit", month: "short" });
   const now = new Date();
   const nextWeek = new Date(now); nextWeek.setDate(now.getDate() + 7);
   const [invoices, customerCount, recentReminders, promises] = await Promise.all([

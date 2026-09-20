@@ -4,14 +4,16 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
+import { formatWorkspaceCurrency } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 
 export default async function StatementsPage() {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
+  const money = (amount: number) => formatWorkspaceCurrency(amount, user.company.defaultCurrency, user.company.country);
 
   const customers = await prisma.customer.findMany({
     where: { companyId: user.companyId },
@@ -105,8 +107,4 @@ export default async function StatementsPage() {
 
 function Metric({ icon: Icon, label, value, colour }: { icon: LucideIcon; label: string; value: string; colour: string }) {
   return <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm"><div className={`flex items-center gap-2 ${colour}`}><Icon size={18} /><span className="text-xl font-bold text-white">{value}</span></div><p className="mt-1 text-xs font-semibold text-blue-100">{label}</p></div>;
-}
-
-function money(amount: number) {
-  return amount.toLocaleString("en-GB", { style: "currency", currency: "GBP" });
 }
