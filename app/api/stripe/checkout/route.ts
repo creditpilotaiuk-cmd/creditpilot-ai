@@ -32,6 +32,7 @@ export async function POST(request: Request) {
   if (buyerType === "consumer" && immediateAccessConsent !== true) return NextResponse.json({ error: "Immediate-access consent is required for a personal-use purchase." }, { status: 400 });
   const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) return NextResponse.json({ error: "Account not found." }, { status: 404 });
+  if (user.company.country === "IE" && buyerType !== "business") return NextResponse.json({ error: "Irish memberships are currently available to business customers only." }, { status: 400 });
   if (selection.requiredPlan && user.company.plan.toLowerCase() !== selection.requiredPlan.toLowerCase()) {
     return NextResponse.json({ error: `This add-on requires an active ${selection.requiredPlan} membership.` }, { status: 400 });
   }
