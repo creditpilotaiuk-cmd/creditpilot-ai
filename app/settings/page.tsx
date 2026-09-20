@@ -14,7 +14,10 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
   const params = await searchParams;
-  const bankReady = Boolean(user.company.bankAccountName && user.company.bankSortCode && user.company.bankAccountNumber);
+  const isIrishWorkspace = user.company.country === "IE";
+  const bankReady = isIrishWorkspace
+    ? Boolean(user.company.bankAccountName && user.company.bankIban)
+    : Boolean(user.company.bankAccountName && user.company.bankSortCode && user.company.bankAccountNumber);
   const profileReady = Boolean(user.name && user.company.name && (user.company.billingEmail || user.email));
 
   return <main className="flex min-h-screen">
@@ -77,6 +80,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-7">
               <Field name="personalName" label="Your name" value={user.name || ""} placeholder="Peter Ingham" help="Used for dashboard greetings and sender identification." />
               <Field name="name" label="Company name" value={user.company.name} placeholder="Your company" help="Shown as your business identity." />
+              <label className="block text-sm font-bold text-slate-700">Business country<select name="country" defaultValue={user.company.country} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal text-ink outline-none transition focus:border-electric focus:ring-4 focus:ring-blue-100"><option value="GB">United Kingdom — GBP</option><option value="IE">Ireland — EUR</option></select><span className="mt-1.5 block text-xs font-normal text-slate-400">This sets your workspace’s default currency and payment details.</span></label>
               <div className="sm:col-span-2"><Field name="billingEmail" label="Billing email" value={user.company.billingEmail || user.email} placeholder="accounts@company.co.uk" type="email" help="Used for membership and account notices." icon={<Mail size={16} />} /></div>
             </div>
           </section>
@@ -92,11 +96,10 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 </select>
               </label>
               <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/60 p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="flex items-center gap-2 font-bold text-ink"><Landmark size={18} className="text-electric" />Bank-transfer instructions</h3><p className="mt-1 text-sm text-slate-600">Complete these fields if customers can pay by bank transfer.</p></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${bankReady ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{bankReady ? "Details complete" : "Setup incomplete"}</span></div>
+                <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="flex items-center gap-2 font-bold text-ink"><Landmark size={18} className="text-electric" />Bank-transfer instructions</h3><p className="mt-1 text-sm text-slate-600">{isIrishWorkspace ? "Add your IBAN for euro bank transfers." : "Complete these fields if customers can pay by bank transfer."}</p></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${bankReady ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{bankReady ? "Details complete" : "Setup incomplete"}</span></div>
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   <Field name="bankAccountName" label="Account name" value={user.company.bankAccountName || ""} placeholder="Your business name" />
-                  <Field name="bankSortCode" label="Sort code" value={user.company.bankSortCode || ""} placeholder="12-34-56" />
-                  <Field name="bankAccountNumber" label="Account number" value={user.company.bankAccountNumber || ""} placeholder="12345678" />
+                  {isIrishWorkspace ? <><Field name="bankIban" label="IBAN" value={user.company.bankIban || ""} placeholder="IE29AIBK93115212345678" /><Field name="bankBic" label="BIC / SWIFT (optional)" value={user.company.bankBic || ""} placeholder="AIBKIE2D" required={false} /></> : <><Field name="bankSortCode" label="Sort code" value={user.company.bankSortCode || ""} placeholder="12-34-56" /><Field name="bankAccountNumber" label="Account number" value={user.company.bankAccountNumber || ""} placeholder="12345678" /></>}
                   <Field name="paymentReference" label="Payment reference" value={user.company.paymentReference || ""} placeholder="Invoice number" />
                 </div>
               </div>
@@ -152,6 +155,6 @@ function Notice({ children }: { children: React.ReactNode }) {
   return <p className="mb-5 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700"><CheckCircle2 size={18} />{children}</p>;
 }
 
-function Field({ name, label, value, placeholder, type = "text", help, icon }: { name: string; label: string; value: string; placeholder: string; type?: string; help?: string; icon?: React.ReactNode }) {
-  return <label className="block text-sm font-bold text-slate-700">{label}<div className="relative mt-2">{icon ? <span className="absolute left-3 top-3.5 text-slate-400">{icon}</span> : null}<input name={name} type={type} defaultValue={value} placeholder={placeholder} required className={`w-full rounded-xl border border-slate-200 px-4 py-3 font-normal text-ink outline-none transition focus:border-electric focus:ring-4 focus:ring-blue-100 ${icon ? "pl-10" : ""}`} /></div>{help ? <span className="mt-1.5 block text-xs font-normal text-slate-400">{help}</span> : null}</label>;
+function Field({ name, label, value, placeholder, type = "text", help, icon, required = true }: { name: string; label: string; value: string; placeholder: string; type?: string; help?: string; icon?: React.ReactNode; required?: boolean }) {
+  return <label className="block text-sm font-bold text-slate-700">{label}<div className="relative mt-2">{icon ? <span className="absolute left-3 top-3.5 text-slate-400">{icon}</span> : null}<input name={name} type={type} defaultValue={value} placeholder={placeholder} required={required} className={`w-full rounded-xl border border-slate-200 px-4 py-3 font-normal text-ink outline-none transition focus:border-electric focus:ring-4 focus:ring-blue-100 ${icon ? "pl-10" : ""}`} /></div>{help ? <span className="mt-1.5 block text-xs font-normal text-slate-400">{help}</span> : null}</label>;
 }

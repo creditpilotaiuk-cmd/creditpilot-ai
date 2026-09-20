@@ -12,7 +12,7 @@ function text(formData: FormData, key: string) { const value = formData.get(key)
 export async function updateInvoiceStatus(formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   const invoiceId = text(formData, "invoiceId");
   const status = text(formData, "status");
   const reason = text(formData, "reason");
@@ -47,7 +47,7 @@ export async function confirmInvoiceLegalProtection(formData: FormData) {
 export async function createInvoice(formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
   const customerId = text(formData, "customerId");
   const number = text(formData, "number");
@@ -59,7 +59,7 @@ export async function createInvoice(formData: FormData) {
   if (!customer) redirect("/invoices?error=customer");
   if (await invoiceLimitReached(user.companyId)) redirect("/invoices?error=limit");
   try {
-    const invoice = await prisma.invoice.create({ data: { companyId: user.companyId, customerId, number, amount, issueDate: Number.isNaN(issueDate.getTime()) ? new Date() : issueDate, dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "MANUAL" } });
+    const invoice = await prisma.invoice.create({ data: { companyId: user.companyId, customerId, number, amount, currency: user.company.defaultCurrency, issueDate: Number.isNaN(issueDate.getTime()) ? new Date() : issueDate, dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "MANUAL" } });
     await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "INVOICE_UPLOADED", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: null, newValue: { number: invoice.number, source: "MANUAL" }, customerId, ipAddress: null } } });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") redirect("/invoices?error=duplicate-number");
@@ -71,7 +71,7 @@ export async function createInvoice(formData: FormData) {
 export async function importInvoicesCsv(formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const user = await prisma.user.findUnique({ where: { email: session.user.email }, include: { company: true } });
   if (!user) redirect("/login");
   const upload = formData.get("file");
   if (!(upload instanceof File) || upload.size === 0) redirect("/invoices?error=file");
@@ -96,7 +96,8 @@ export async function importInvoicesCsv(formData: FormData) {
     if (!customerName || !number || !Number.isFinite(amount) || Number.isNaN(dueDate.getTime())) continue;
     const email = index("customer_email") >= 0 ? values[index("customer_email")] : "";
     const customer = email ? await prisma.customer.upsert({ where: { companyId_externalId: { companyId: user.companyId, externalId: email } }, update: { name: customerName }, create: { companyId: user.companyId, name: customerName, email, externalId: email } }) : await prisma.customer.create({ data: { companyId: user.companyId, name: customerName } });
-    const invoice = await prisma.invoice.create({ data: { companyId: user.companyId, customerId: customer.id, number, amount, issueDate: new Date(), dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "CSV" } });
+    const currency = index("currency") >= 0 && /^[A-Za-z]{3}$/.test(values[index("currency")]) ? values[index("currency")].toUpperCase() : user.company.defaultCurrency;
+    const invoice = await prisma.invoice.create({ data: { companyId: user.companyId, customerId: customer.id, number, amount, currency, issueDate: new Date(), dueDate, status: dueDate < new Date() ? "OVERDUE" : "OUTSTANDING", source: "CSV" } });
     await prisma.auditEvent.create({ data: { companyId: user.companyId, userId: user.id, action: "INVOICE_UPLOADED", entity: "Invoice", entityId: invoice.id, metadata: { previousValue: null, newValue: { number: invoice.number, source: "CSV" }, customerId: customer.id, ipAddress: null } } });
     imported += 1;
   }
@@ -114,8 +115,9 @@ export async function sendInvoice(formData: FormData) {
   const key = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
   if (!key || !from) redirect("/invoices?error=email-not-configured");
-  const payment = invoice.company.paymentMethods === "BANK" || invoice.company.paymentMethods === "BOTH" ? `\n\nPayment by bank transfer:\nAccount name: ${invoice.company.bankAccountName || "Please contact us"}\nSort code: ${invoice.company.bankSortCode || "Please contact us"}\nAccount number: ${invoice.company.bankAccountNumber || "Please contact us"}\nReference: ${invoice.company.paymentReference || invoice.number}` : "";
-  const emailText = `Hello ${invoice.customer.contactName || invoice.customer.name},\n\nPlease find your invoice details below.\n\nInvoice: ${invoice.number}\nAmount: £${Number(invoice.amount).toFixed(2)}\nDue date: ${invoice.dueDate.toLocaleDateString("en-GB")}${payment}\n\nPlease contact us if you have any questions.\n\nKind regards\n${invoice.company.name}`;
+  const payment = invoice.company.paymentMethods === "BANK" || invoice.company.paymentMethods === "BOTH" ? invoice.company.country === "IE" ? `\n\nPayment by bank transfer:\nAccount name: ${invoice.company.bankAccountName || "Please contact us"}\nIBAN: ${invoice.company.bankIban || "Please contact us"}${invoice.company.bankBic ? `\nBIC / SWIFT: ${invoice.company.bankBic}` : ""}\nReference: ${invoice.company.paymentReference || invoice.number}` : `\n\nPayment by bank transfer:\nAccount name: ${invoice.company.bankAccountName || "Please contact us"}\nSort code: ${invoice.company.bankSortCode || "Please contact us"}\nAccount number: ${invoice.company.bankAccountNumber || "Please contact us"}\nReference: ${invoice.company.paymentReference || invoice.number}` : "";
+  const amountText = new Intl.NumberFormat(invoice.company.country === "IE" ? "en-IE" : "en-GB", { style: "currency", currency: invoice.currency }).format(Number(invoice.amount));
+  const emailText = `Hello ${invoice.customer.contactName || invoice.customer.name},\n\nPlease find your invoice details below.\n\nInvoice: ${invoice.number}\nAmount: ${amountText}\nDue date: ${invoice.dueDate.toLocaleDateString(invoice.company.country === "IE" ? "en-IE" : "en-GB")}${payment}\n\nPlease contact us if you have any questions.\n\nKind regards\n${invoice.company.name}`;
   const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [invoice.customer.email], subject: `Invoice ${invoice.number} from ${invoice.company.name}`, text: emailText, html: brandedEmail(`<p>${textToEmailHtml(emailText)}</p>`, invoice.company.name) }) });
   if (response.ok) await prisma.$transaction([
     prisma.invoice.update({ where: { id: invoice.id }, data: { status: "SENT" } }),

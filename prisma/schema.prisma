@@ -53,11 +53,16 @@ model Company {
   name                 String
   slug                 String    @unique
   billingEmail         String?
+  country              String    @default("GB")
+  defaultCurrency      String    @default("GBP")
+  businessUseConfirmedAt DateTime?
   plan                 String    @default("BETA")
   paymentMethods      String    @default("STRIPE")
   bankAccountName     String?
   bankSortCode        String?
   bankAccountNumber   String?
+  bankIban            String?
+  bankBic             String?
   paymentReference    String?
   stripeCustomerId     String?   @unique
   createdAt            DateTime  @default(now())
