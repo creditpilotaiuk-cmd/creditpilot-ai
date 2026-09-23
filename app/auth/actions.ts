@@ -5,6 +5,7 @@ import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { signIn } from "@/lib/auth";
+import { sendWelcomeEmail } from "@/lib/welcome-email";
 
 function text(formData: FormData, name: string) {
   const value = formData.get(name);
@@ -28,8 +29,9 @@ export async function registerAction(formData: FormData) {
   if (await prisma.user.findUnique({ where: { email } })) redirect(`/register?error=exists&country=${countryParam}`);
 
   const passwordHash = await bcrypt.hash(password, 12);
+  let company: { id: string; users: { id: string }[] };
   try {
-    await prisma.company.create({
+    company = await prisma.company.create({
       data: {
         name: companyName,
         slug: companySlug(companyName),
@@ -39,10 +41,24 @@ export async function registerAction(formData: FormData) {
         businessUseConfirmedAt: new Date(),
         users: { create: { name, email, passwordHash, role: "OWNER" } },
       },
+      include: { users: { select: { id: true } } },
     });
   } catch {
     redirect(`/register?error=unavailable&country=${countryParam}`);
   }
+
+  const delivered = await sendWelcomeEmail({ name, email, companyName });
+  try {
+    await prisma.auditEvent.create({
+      data: {
+        companyId: company.id,
+        userId: company.users[0]?.id,
+        action: delivered ? "WELCOME_EMAIL_SENT" : "WELCOME_EMAIL_FAILED",
+        entity: "Company",
+        entityId: company.id,
+      },
+    });
+  } catch { /* Account creation should not be blocked if audit logging is unavailable. */ }
   await signIn("credentials", { email, password, redirectTo: "/dashboard" });
 }
 
