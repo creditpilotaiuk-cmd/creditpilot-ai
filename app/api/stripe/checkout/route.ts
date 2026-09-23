@@ -14,6 +14,10 @@ type CatalogueItem = {
   usLabel: string;
 };
 
+// Stripe's business-use SaaS tax code. Regional prices are created inline for
+// approved EUR and USD amounts, so the classification must travel with them.
+const BUSINESS_SAAS_TAX_CODE = "txcd_10103001";
+
 const catalogue: Record<string, CatalogueItem> = {
   Starter: { price: process.env.STRIPE_STARTER_PRICE_ID, type: "plan", irelandAmount: 5900, irelandLabel: "CreditPilot AI Starter", usAmount: 6500, usLabel: "CreditPilot AI Starter" },
   Growth: { price: process.env.STRIPE_GROWTH_PRICE_ID, type: "plan", irelandAmount: 14900, irelandLabel: "CreditPilot AI Growth", usAmount: 16900, usLabel: "CreditPilot AI Growth" },
@@ -63,6 +67,7 @@ export async function POST(request: Request) {
     const label = user.company.country === "IE" ? selection.irelandLabel : selection.usLabel;
     set("line_items[0][price_data][currency]", billingCurrency.toLowerCase());
     set("line_items[0][price_data][product_data][name]", label);
+    set("line_items[0][price_data][product_data][tax_code]", BUSINESS_SAAS_TAX_CODE);
     set("line_items[0][price_data][recurring][interval]", "month");
     set("line_items[0][price_data][unit_amount]", String(amount));
   } else {
