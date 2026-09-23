@@ -23,21 +23,26 @@ export async function registerAction(formData: FormData) {
   const country = text(formData, "country");
   const businessUse = formData.get("businessUse") === "on";
 
-  if (!name || !companyName || !email || password.length < 8 || !businessUse || !["GB", "IE", "US"].includes(country)) redirect("/register?error=details");
-  if (await prisma.user.findUnique({ where: { email } })) redirect("/register?error=exists");
+  const countryParam = ["GB", "IE", "US"].includes(country) ? country : "GB";
+  if (!name || !companyName || !email || password.length < 8 || !businessUse || !["GB", "IE", "US"].includes(country)) redirect(`/register?error=details&country=${countryParam}`);
+  if (await prisma.user.findUnique({ where: { email } })) redirect(`/register?error=exists&country=${countryParam}`);
 
   const passwordHash = await bcrypt.hash(password, 12);
-  await prisma.company.create({
-    data: {
-      name: companyName,
-      slug: companySlug(companyName),
-      billingEmail: email,
-      country,
-      defaultCurrency: country === "IE" ? "EUR" : country === "US" ? "USD" : "GBP",
-      businessUseConfirmedAt: new Date(),
-      users: { create: { name, email, passwordHash, role: "OWNER" } },
-    },
-  });
+  try {
+    await prisma.company.create({
+      data: {
+        name: companyName,
+        slug: companySlug(companyName),
+        billingEmail: email,
+        country,
+        defaultCurrency: country === "IE" ? "EUR" : country === "US" ? "USD" : "GBP",
+        businessUseConfirmedAt: new Date(),
+        users: { create: { name, email, passwordHash, role: "OWNER" } },
+      },
+    });
+  } catch {
+    redirect(`/register?error=unavailable&country=${countryParam}`);
+  }
   await signIn("credentials", { email, password, redirectTo: "/dashboard" });
 }
 
