@@ -42,6 +42,7 @@ export default function ContactPage() {
 
     <section className="px-6 py-10 text-center lg:px-8">
       <p className="text-sm text-slate-600">Want to compare memberships first? <Link className="font-semibold text-blue-600 hover:underline" href="/products">View CreditPilot products and pricing</Link>.</p>
+      <p className="mt-4 text-xs text-slate-500">CreditPilot AI is the trading name of CREDITPILOT AI LTD, registered in England and Wales. Company number 17500336.</p>
     </section>
   </main>;
 }

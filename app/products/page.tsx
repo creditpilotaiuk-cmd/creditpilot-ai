@@ -193,6 +193,6 @@ export default function ProductsPage() {
       </div>
     </section>
 
-    <footer className="border-t border-slate-200 bg-white px-6 py-10 lg:px-8"><div className="mx-auto flex max-w-7xl flex-col gap-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-bold text-ink">CreditPilot AI</p><p className="mt-1">Smarter credit control for UK and European businesses.</p></div><nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer"><Link href="/">Home</Link><Link href="/compliance">Compliance</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/register">Start free beta</Link></nav><p>© {new Date().getFullYear()} CreditPilot AI</p></div></footer>
+    <footer className="border-t border-slate-200 bg-white px-6 py-10 lg:px-8"><div className="mx-auto flex max-w-7xl flex-col gap-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-bold text-ink">CreditPilot AI</p><p className="mt-1">Smarter credit control for UK and European businesses.</p><p className="mt-1 text-xs">CREDITPILOT AI LTD is registered in England and Wales. Company number 17500336.</p></div><nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer"><Link href="/">Home</Link><Link href="/compliance">Compliance</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/register">Start free beta</Link></nav><p>© {new Date().getFullYear()} CREDITPILOT AI LTD</p></div></footer>
   </main>;
 }
