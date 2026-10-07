@@ -19,14 +19,14 @@ export default function ContactPage() {
               <span className="rounded-xl bg-blue-50 p-3 text-blue-600"><MessageSquare size={22} /></span>
               <div>
                 <p className="font-semibold text-ink">General enquiries</p>
-                <p className="mt-1 text-sm leading-6 text-slate-600">For membership, sales and general questions, email <a className="font-semibold text-electric hover:underline" href="mailto:info@creditpilotai.co.uk">info@creditpilotai.co.uk</a>.</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">For membership, sales and general questions, email <a className="font-semibold text-electric hover:underline" href="mailto:info@creditpilotai.co.uk">info@creditpilotai.co.uk</a></p>
               </div>
             </div>
             <div className="flex items-start gap-4 rounded-2xl border border-blue-100 bg-white/80 p-5 shadow-sm">
               <span className="rounded-xl bg-blue-50 p-3 text-blue-600"><ShieldCheck size={22} /></span>
               <div>
                 <p className="font-semibold text-ink">Account and password support</p>
-                <p className="mt-1 text-sm leading-6 text-slate-600">For access, password or account issues, email <a className="font-semibold text-electric hover:underline" href="mailto:support@creditpilotai.co.uk">support@creditpilotai.co.uk</a>.</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">For access, password or account issues, email <a className="font-semibold text-electric hover:underline" href="mailto:support@creditpilotai.co.uk">support@creditpilotai.co.uk</a></p>
               </div>
             </div>
           </div>
