@@ -15,7 +15,7 @@ export async function submitSupportRequest(formData: FormData) {
   if (description.length < 10) redirect("/support?error=description");
 
   const key = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL;
+  const from = process.env.SUPPORT_FROM_EMAIL || process.env.RESEND_FROM_EMAIL;
   const to = process.env.SUPPORT_EMAIL || "support@creditpilotai.co.uk";
   if (!key || !from || !to) redirect("/support?error=email-not-configured");
 
