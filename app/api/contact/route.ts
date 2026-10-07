@@ -36,9 +36,10 @@ export async function POST(request: Request) {
     }
 
     const apiKey = process.env.RESEND_API_KEY;
-    const destination = process.env.CONTACT_EMAIL;
+    const from = process.env.RESEND_FROM_EMAIL;
+    const destination = process.env.CONTACT_EMAIL || "info@creditpilotai.co.uk";
 
-    if (!apiKey || !destination) {
+    if (!apiKey || !from) {
       console.error("Contact form email delivery is not configured.");
       return NextResponse.json({ error: "Email delivery is unavailable." }, { status: 503 });
     }
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "CreditPilot AI website <onboarding@resend.dev>",
+        from,
         to: [destination],
         reply_to: email,
         subject: `Website enquiry: ${enquiry}`,

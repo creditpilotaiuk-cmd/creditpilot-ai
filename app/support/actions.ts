@@ -16,7 +16,7 @@ export async function submitSupportRequest(formData: FormData) {
 
   const key = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
-  const to = user.company.billingEmail || process.env.SUPPORT_EMAIL || user.email;
+  const to = process.env.SUPPORT_EMAIL || "support@creditpilotai.co.uk";
   if (!key || !from || !to) redirect("/support?error=email-not-configured");
 
   const response = await fetch("https://api.resend.com/emails", {
