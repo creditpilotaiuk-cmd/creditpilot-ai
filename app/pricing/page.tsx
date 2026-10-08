@@ -123,6 +123,8 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
 
         <div className="mx-auto max-w-7xl p-5 sm:p-8">
           {params.success && <div className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700"><CheckCircle2 size={19} />Checkout complete. Your account will update once payment is confirmed.</div>}
+          {params.cancelled === "scheduled" && <div className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700"><CheckCircle2 size={19} />Your cancellation has been scheduled for the end of the current paid billing period. We have emailed you a confirmation.</div>}
+          {params.cancelled === "requested" && <div className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700"><CheckCircle2 size={19} />Your cancellation request has been received. We have emailed you a confirmation and our support team will review it.</div>}
           {regionalBusinessOnly && <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900"><strong>{regionalName} business customers only.</strong> Memberships are currently available for business use only while consumer tax treatment is being finalised.</div>}
 
           <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#07183f] via-[#123d91] to-[#2867f0] p-6 text-white shadow-xl shadow-blue-900/15 sm:p-10">
